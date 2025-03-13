@@ -7,6 +7,7 @@ import { Billing } from "./billing.entity";
 import { Insurance } from "./insurance.entity";
 import { Gender } from "@/modules/patient/enums/gender.enum";
 import { Exclude } from "class-transformer";
+import { Role } from "@/modules/auth/enums/role.enum";
 
 @Entity({ name: "patients" })
 export class Patient extends BaseEntity {
@@ -82,4 +83,16 @@ export class Patient extends BaseEntity {
 
   @OneToMany(() => Insurance, (insurance) => insurance.patient)
   insurances: Insurance[];
+
+  @ApiProperty({
+    enum: Role,
+    example: Role.PATIENT,
+    description: "User role"
+  })
+  @Column({
+    type: "enum",
+    enum: Role,
+    default: Role.PATIENT
+  })
+  role: Role;
 }

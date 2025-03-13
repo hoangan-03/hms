@@ -3,7 +3,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PatientService } from "../patient/patient.service";
-// Add these interfaces for pagination and filtering
+import {
+  DateRangeFilter,
+  PaginatedMedicalRecordResponse,
+  PaginationParams,
+} from "./interface/paging-response-medical-record.interface";
+import { formatStartDate } from "@/utils/parse-date-string";
 
 @Injectable()
 export class MedicalRecordService {
@@ -12,51 +17,51 @@ export class MedicalRecordService {
     private readonly medicalRecordRepository: Repository<MedicalRecord>,
     private readonly patientService: PatientService
   ) {}
-
   async getMedicalRecords(
     patientId: number,
-    { page = 1, size = 10 }: PaginationParams = {},
+    { page = 1, perPage = 10 }: PaginationParams = {},
     { dateFrom, dateTo }: DateRangeFilter = {},
     orderDirection: "ASC" | "DESC" = "DESC"
-  ): Promise<PaginatedResult<MedicalRecord>> {
-    // Validate patient exists
+  ): Promise<PaginatedMedicalRecordResponse> {
     await this.patientService.getOne({ where: { id: patientId } });
 
-    // Build query with where conditions
     const queryBuilder = this.medicalRecordRepository
       .createQueryBuilder("record")
       .leftJoinAndSelect("record.doctor", "doctor")
-      .where("record.patient.id = :patientId", { patientId });
+      .leftJoinAndSelect("record.patient", "patient")
+      .leftJoinAndSelect("record.prescriptions", "prescription")
+      .where("patient.id = :patientId", { patientId });
 
-    // Add date range filters if provided
     if (dateFrom) {
-      queryBuilder.andWhere("record.date >= :dateFrom", { dateFrom });
+      queryBuilder.andWhere("record.recordDate > :dateFrom", {
+        dateFrom: formatStartDate(dateFrom),
+      });
     }
     if (dateTo) {
-      queryBuilder.andWhere("record.date <= :dateTo", { dateTo });
+      const nextDay = new Date(dateTo);
+      nextDay.setDate(nextDay.getDate() + 2);
+
+      queryBuilder.andWhere("record.recordDate < :dateTo", {
+        dateTo: formatStartDate(nextDay),
+      });
     }
 
-    // Add ordering by date
-    queryBuilder.orderBy("record.date", orderDirection);
+    queryBuilder.orderBy("record.recordDate", orderDirection);
 
-    // Get total count for pagination
-    const total = await queryBuilder.getCount();
+    const totalItems = await queryBuilder.getCount();
 
-    // Add pagination
-    const skip = (page - 1) * size;
-    queryBuilder.skip(skip).take(size);
+    const skip = (page - 1) * perPage;
+    queryBuilder.skip(skip).take(perPage);
 
-    // Execute query
     const records = await queryBuilder.getMany();
 
-    // Return paginated result
     return {
       data: records,
-      meta: {
-        total,
+      pagination: {
+        totalItems,
         page,
-        size,
-        totalPages: Math.ceil(total / size),
+        perPage,
+        totalPages: Math.ceil(totalItems / perPage),
       },
     };
   }

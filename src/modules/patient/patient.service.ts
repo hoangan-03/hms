@@ -10,7 +10,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
-import { UpdatePatientDto } from "./dto/update-patient.dto";
+import { UpdatePatientDto } from "./dtos/update-patient.dto";
 
 @Injectable()
 export class PatientService {

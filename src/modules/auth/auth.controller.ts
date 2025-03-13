@@ -13,16 +13,16 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from '@/modules/auth/auth.service';
-import { RegisterUserDto } from '@/modules/auth/dto/register-user.dto';
+import { RegisterUserDto } from '@/modules/auth/dtos/register-user.dto';
 import { JWTAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '@/modules/auth/guards/local-auth.guard';
 import { SessionAuthGuard } from '@/modules/auth/guards/session-auth.guard';
 import { TokenInterceptor } from '@/modules/auth/interceptors/token.interceptor';
-import { LoginUserDTO } from '@/modules/auth/dto/login-user.dto';
-import { AuthTokenResponseDto } from '@/modules/auth/dto/auth-token-response.dto';
-import { RegisterUserResponseDto } from '@/modules/auth/dto/register-user-response.dto';
+import { LoginUserDTO } from '@/modules/auth/dtos/login-user.dto';
+import { AuthTokenResponseDto } from '@/modules/auth/dtos/auth-token-response.dto';
+import { RegisterUserResponseDto } from '@/modules/auth/dtos/register-user-response.dto';
 import { Patient } from '@/entities/patient.entity';
-import { CurrentPatient } from '../../decorators/patient.decorator';
+import { CurrentUser } from './decorators/user.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -99,7 +99,7 @@ export class AuthController {
     status: 401, 
     description: 'Unauthorized - Invalid or missing token' 
   })
-  me(@CurrentPatient() patient: Patient): Patient {
+  me(@CurrentUser() patient: Patient): Patient {
     delete patient.password;
     return patient;
   }

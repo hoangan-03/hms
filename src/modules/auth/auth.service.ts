@@ -5,13 +5,14 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { RegisterUserDto } from "@/modules/auth/dto/register-user.dto";
+import { RegisterUserDto } from "@/modules/auth/dtos/register-user.dto";
 import { JwtPayload } from "@/modules/auth/interfaces/jwt-payload.interface";
-import { AuthTokenResponseDto } from "@/modules/auth/dto/auth-token-response.dto";
+import { AuthTokenResponseDto } from "@/modules/auth/dtos/auth-token-response.dto";
 import { AuthConstant } from "@/modules/auth/constant";
-import * as bcrypt from "bcryptjs";
+
 import { PatientService } from "../patient/patient.service";
 import { Patient } from "@/entities/patient.entity";
+import { checkPassword, hashPassword } from "@/utils/hash-password";
 
 @Injectable()
 export class AuthService {
@@ -20,23 +21,10 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(password, salt);
-  }
-
-  async checkPassword(
-    plainPassword: string,
-    hashedPassword: string
-  ): Promise<boolean> {
-    return hashedPassword
-      ? await bcrypt.compare(plainPassword, hashedPassword)
-      : false;
-  }
 
   async register(signUp: RegisterUserDto): Promise<Patient> {
     try {
-      const hashedPassword = await this.hashPassword(signUp.password);
+      const hashedPassword = await hashPassword(signUp.password);
       const user = await this.patientService.create({
         ...signUp,
         password: hashedPassword,
@@ -65,7 +53,7 @@ export class AuthService {
       throw new UnauthorizedException(`Invalid credentials`);
     }
 
-    if (!(await this.checkPassword(password, user.password || ""))) {
+    if (!(await checkPassword(password, user.password || ""))) {
       throw new UnauthorizedException(`Invalid credentials`);
     }
 
@@ -76,6 +64,7 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id.toString(),
       username: user.username,
+      role: user.role,
     };
 
     const access_token = this.jwtService.sign(payload, {

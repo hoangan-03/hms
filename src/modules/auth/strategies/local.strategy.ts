@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 
 import { AuthService } from '@/modules/auth/auth.service';
-import { AuthTokenResponseDto } from '../dto/auth-token-response.dto';
+import { AuthTokenResponseDto } from '../dtos/auth-token-response.dto';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {

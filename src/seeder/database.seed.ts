@@ -9,6 +9,8 @@ import { Prescription } from "@/entities/prescription.entity";
 import { Insurance } from "@/entities/insurance.entity";
 import { Billing } from "@/entities/billing.entity";
 import { Gender } from "@/modules/patient/enums/gender.enum";
+import { hashPassword } from "@/utils/hash-password";
+import { Role } from "@/modules/auth/enums/role.enum";
 
 // Sample data
 const departmentData = [
@@ -56,12 +58,16 @@ const createFakeDoctor = (departmentId: number) => {
   };
 };
 
-const createFakePatient = () => {
+const createFakePatient = async () => {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
-  const username = faker.internet.username();
-  const password = faker.internet.password();
-  
+  // const username = faker.internet.username();
+  // const password = faker.internet.password();
+  const username = "testuser";
+  const orignial_password = "Password123@";
+  const password = await hashPassword(orignial_password);
+  const role = Role.PATIENT;
+
   return {
     name: `${firstName} ${lastName}`,
     age: faker.number.int({ min: 1, max: 100 }),
@@ -70,6 +76,7 @@ const createFakePatient = () => {
     password,
     phoneNumber: faker.phone.number({ style: 'international' }),
     address: faker.location.streetAddress(),
+    role
   };
 };
 
@@ -216,10 +223,10 @@ export const seedDatabase = async (dataSource: DataSource) => {
   // 3. Seed patients
   console.log("🧑 Seeding patients...");
   const patients: Patient[] = [];
-  const patientCount = 20; // Adjust as needed
-
+  // const patientCount = 20;
+  const patientCount = 1;
   for (let i = 0; i < patientCount; i++) {
-    const patientData = createFakePatient();
+    const patientData = await createFakePatient();
     const patient = patientRepository.create(patientData);
     await patientRepository.save(patient);
     patients.push(patient);
