@@ -5,12 +5,12 @@ import { MedicalRecord } from "@/entities/medical-record.entity";
 import { Appointment } from "@/entities/appointment.entity";
 import { Insurance } from "@/entities/insurance.entity";
 import { Billing } from "@/entities/billing.entity";
-import { Prescription } from "@/entities/prescription.entity";
 import {
   Injectable,
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
+import { UpdatePatientDto } from "./dto/update-patient.dto";
 
 @Injectable()
 export class PatientService {
@@ -46,13 +46,13 @@ export class PatientService {
             .join(", ")
         : "unknown";
 
-      throw new NotFoundException(`There isn't any patient with id: ${identifier}`);
+      throw new NotFoundException(`There isn't any patient with ${identifier}`);
     }
     return patient;
   }
 
   // Profile Management
-  async updateProfile(id: number, updates: Partial<Patient>): Promise<Patient> {
+  async updateProfile(id: number, updates: UpdatePatientDto): Promise<Patient> {
     const patient = await this.getOne({ where: { id } });
     this.patientRepository.merge(patient, updates);
     return this.patientRepository.save(patient);
@@ -74,7 +74,7 @@ export class PatientService {
     });
     
     if (!record) {
-      throw new NotFoundException(`Medical record with ID ${id} not found`);
+      throw new NotFoundException(`Medical record with ID: ${id} not found`);
     }
     
     return record;
@@ -89,7 +89,7 @@ export class PatientService {
     });
     
     if (!insurance) {
-      throw new NotFoundException(`No insurance found for patient with ID ${patientId}`);
+      throw new NotFoundException(`No insurance found for patient with ID: ${patientId}`);
     }
     
     return insurance;

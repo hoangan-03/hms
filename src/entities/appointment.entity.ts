@@ -23,14 +23,14 @@ import {
       example: "2025-03-12 10:00:00",
       description: "Appointment date and time",
     })
-    @Column({ type: "timestamp" })
+    @Column({ type: "timestamp", nullable: false })
     dateTime: Date;
   
     @ApiProperty({
       example: "General Checkup",
       description: "Appointment reason",
     })
-    @Column({ type: "varchar", length: 255 })
+    @Column({ type: "varchar", length: 255, nullable:true })
     reason: string;
   
     @ManyToOne(() => Doctor, (doctor) => doctor.appointments)

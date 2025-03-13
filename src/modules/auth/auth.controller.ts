@@ -22,7 +22,7 @@ import { LoginUserDTO } from '@/modules/auth/dto/login-user.dto';
 import { AuthTokenResponseDto } from '@/modules/auth/dto/auth-token-response.dto';
 import { RegisterUserResponseDto } from '@/modules/auth/dto/register-user-response.dto';
 import { Patient } from '@/entities/patient.entity';
-import { AuthPatient } from '../patient/decorators/patient.decorator';
+import { CurrentPatient } from '../../decorators/patient.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -99,7 +99,8 @@ export class AuthController {
     status: 401, 
     description: 'Unauthorized - Invalid or missing token' 
   })
-  me(@AuthPatient() patient: Patient): Patient {
+  me(@CurrentPatient() patient: Patient): Patient {
+    delete patient.password;
     return patient;
   }
 }

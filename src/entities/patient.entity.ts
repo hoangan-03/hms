@@ -6,6 +6,7 @@ import { MedicalRecord } from "./medical-record.entity";
 import { Billing } from "./billing.entity";
 import { Insurance } from "./insurance.entity";
 import { Gender } from "@/modules/patient/enums/gender.enum";
+import { Exclude } from "class-transformer";
 
 @Entity({ name: "patients" })
 export class Patient extends BaseEntity {
@@ -20,7 +21,7 @@ export class Patient extends BaseEntity {
     example: "John Doe",
     description: "Patient full name",
   })
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "varchar", length: 255, nullable: true })
   name: string;
 
   @ApiProperty({
@@ -35,13 +36,14 @@ export class Patient extends BaseEntity {
     description: "Patient password",
   })
   @Column({ type: "varchar", length: 255 })
+  @Exclude({ toPlainOnly: true })
   password?: string;
 
   @ApiProperty({
     example: 30,
     description: "Patient age",
   })
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: true })
   age: number;
 
   @ApiProperty({
@@ -49,8 +51,9 @@ export class Patient extends BaseEntity {
     description: "Patient gender",
   })
   @Column({
-    type: "enum",
+    type: "enum", 
     enum: Gender,
+    nullable: true
   })
   gender: Gender;
 

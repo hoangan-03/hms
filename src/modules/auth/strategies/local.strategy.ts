@@ -9,12 +9,12 @@ import { AuthTokenResponseDto } from '../dto/auth-token-response.dto';
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   constructor(private readonly authService: AuthService) {
     super({
-      usernameField: 'email',
+      usernameField: 'username',
       passReqToCallback: false,
     });
   }
 
-  validate(email: string, password: string): Promise<AuthTokenResponseDto> {
-    return this.authService.login(email, password);
+  validate(username: string, password: string): Promise<AuthTokenResponseDto> {
+    return this.authService.login(username, password);
   }
 }

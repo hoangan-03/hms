@@ -1,13 +1,13 @@
 import {
   IsDefined,
   IsNotEmpty,
-  IsEmail,
   MinLength,
   Validate,
   Matches,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsUserNameAlreadyExist } from "../../../modules/patient/validators/is-username-already-exist.validator";
+import { IsUserNameAlreadyExist } from "../../patient/validators/is-username-already-exist.validator";
+
 export class RegisterUserDto {
   @ApiProperty({
     example: "testuser",
@@ -15,7 +15,7 @@ export class RegisterUserDto {
   })
   @IsDefined()
   @IsNotEmpty()
-  // @Validate(IsUserNameAlreadyExist)
+  @Validate(IsUserNameAlreadyExist)   
   readonly username: string;
 
   @ApiProperty({
@@ -27,7 +27,7 @@ export class RegisterUserDto {
   @MinLength(8)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])/, {
     message:
-      "Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character",
+      "Password must be at least 8 character, contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character",
   })
   readonly password: string;
 }
