@@ -11,11 +11,12 @@ import { Department } from "@/entities/department.entity";
 import { Doctor } from "@/entities/doctor.entity";
 import { MedicalRecord } from "@/entities/medical-record.entity";
 import { Insurance } from "@/entities/insurance.entity";
+import { DoctorService } from "../doctor/doctor.service";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Patient, Doctor, Department, MedicalRecord, Appointment,Billing, Insurance ])],
   controllers: [AppointmentController],
-  providers: [AppointmentService, PatientService],
+  providers: [AppointmentService, PatientService, DoctorService],
   exports: [AppointmentService],
 })
 export class AppointmentModule {}

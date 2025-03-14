@@ -58,27 +58,7 @@ export class PatientService {
     return this.patientRepository.save(patient);
   }
 
-  // Medical Records
-  async getMedicalRecords(patientId: number): Promise<MedicalRecord[]> {
-    await this.getOne({ where: { id: patientId } }); // Verify patient exists
-    return this.medicalRecordRepository.find({
-      where: { patient: { id: patientId } },
-      relations: ["doctor"],
-    });
-  }
 
-  async getMedicalRecord(id: number): Promise<MedicalRecord> {
-    const record = await this.medicalRecordRepository.findOne({
-      where: { id },
-      relations: ["doctor", "patient", "prescriptions"],
-    });
-    
-    if (!record) {
-      throw new NotFoundException(`Medical record with ID: ${id} not found`);
-    }
-    
-    return record;
-  }
 
   // Insurance
   async getInsurance(patientId: number): Promise<Insurance> {
@@ -135,27 +115,4 @@ export class PatientService {
     
   //   return prescriptions;
   // }
-
-  // Advanced Queries
-  async getPatientWithFullProfile(id: number): Promise<any> {
-    const patient = await this.patientRepository.findOne({
-      where: { id },
-      relations: [
-        "medicalRecords", 
-        "medicalRecords.doctor",
-        "medicalRecords.prescriptions", 
-        "appointments",
-        "appointments.doctor",
-        "appointments.doctor.department",
-        "insurance",
-        "billings"
-      ]
-    });
-    
-    if (!patient) {
-      throw new NotFoundException(`Patient with ID ${id} not found`);
-    }
-    
-    return patient;
-  }
 }

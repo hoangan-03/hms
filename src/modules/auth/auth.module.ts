@@ -8,11 +8,13 @@ import { SessionSerializer } from '@/modules/auth/session.serializer';
 import { JwtStrategy } from '@/modules/auth/strategies/jwt.strategy';
 import { LocalStrategy } from '@/modules/auth/strategies/local.strategy';
 import { PatientModule } from '../patient/patient.module';
+import { DoctorModule } from '../doctor/doctor.module';
 
 @Module({
   imports: [
     ConfigModule,
     PatientModule,
+    DoctorModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

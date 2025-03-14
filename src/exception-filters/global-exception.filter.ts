@@ -37,9 +37,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception instanceof HttpException ? exception.getStatus() : 500;
 
-    let errorResponse: any = {
-      statusCode: status,
-      timestamp: new Date().toISOString(),
+    const errorResponse: any = {
+      statusCode: status,   
+      timestamp: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Bangkok' }).replace(',', ''),
     };
 
     if (exception instanceof BadRequestException) {

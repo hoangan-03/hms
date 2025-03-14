@@ -8,10 +8,16 @@ export class JWTAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, patient: Patient, info: any): any {
-    if (err || !patient) {
-      throw err + " " + info || new UnauthorizedException('Authentication required');
-    }
-    return patient;
-  }
+  // handleRequest(err: any, patient: Patient, info: any): any {
+  //   // If there's an error or no patient was returned from the strategy
+  //   if (err || !patient) {
+  //     // Throw a proper unauthorized exception
+  //     console.log(info.message);
+  //     throw new UnauthorizedException(
+  //       info ? info.message : 'Authentication required'
+  //     );
+     
+  //   }
+  //   return patient;
+  // }
 }

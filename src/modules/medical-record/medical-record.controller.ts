@@ -88,7 +88,7 @@ export class MedicalRecordController {
   })
   @ApiResponse({
     status: 403,
-    description: "Forbidden - Record does not belong to this patient",
+    description: "Forbidden resource - You are not allowed to access this",
   })
   @ApiResponse({
     status: 404,

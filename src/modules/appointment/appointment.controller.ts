@@ -1,4 +1,3 @@
-import { PaginatedAppointmentResponseDto } from "./dtos/paging-response-appointment.dto";
 import {
   Controller,
   Post,
@@ -9,8 +8,18 @@ import {
   UseInterceptors,
   UseGuards,
   Query,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+  ApiQuery,
+} from "@nestjs/swagger";
 import { Appointment } from "@/entities/appointment.entity";
 import { AppointmentService } from "./appointment.service";
 import { CurrentUser } from "@/modules/auth/decorators/user.decorator";
@@ -22,11 +31,15 @@ import { Role } from "../auth/enums/role.enum";
 import { PaginatedAppointmentResponse } from "./interface/paging-response-appointment.interface";
 import { parseDateString } from "@/utils/parse-date-string";
 import { PagingQueryDto } from "../../commons/dtos/paging-query.dto";
+import { PaginatedAppointmentResponseDto } from "./dtos/paging-response-appointment.dto";
+import { Doctor } from "@/entities/doctor.entity";
+import { TimeSlot } from "./enums/time-slot.enum";
 
 @ApiTags("appointments")
 @UseGuards(JWTAuthGuard, RolesGuard)
 @Controller("appointments")
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
@@ -42,7 +55,7 @@ export class AppointmentController {
     status: 401,
     description: "Unauthorized - Invalid or missing token",
   })
-  async getMedicalRecords(
+  async getAppointments(
     @CurrentUser("id") patientId: number,
     @Query() queryParams: PagingQueryDto
   ): Promise<PaginatedAppointmentResponse> {
@@ -67,8 +80,9 @@ export class AppointmentController {
     );
   }
 
-  @Post("/appiontments")
+  @Post()
   @Roles(Role.PATIENT)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Create a new appointment" })
   @ApiBody({ type: CreateAppointmentDto })
   @ApiResponse({
@@ -80,14 +94,19 @@ export class AppointmentController {
     status: 400,
     description: "Bad Request - Invalid input data",
   })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
   async createAppointment(
-    @Body() appointment: Appointment
+    @CurrentUser("id") patientId: number,
+    @Body() appointmentDto: CreateAppointmentDto
   ): Promise<Appointment> {
-    return this.appointmentService.createAppointment(appointment);
+    return this.appointmentService.createAppointment(patientId, appointmentDto);
   }
 
-  @Get("/appointments/:appointmentId")
-  @Roles(Role.DOCTOR)
+  @Get(":appointmentId")
+  @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: "Get specific appointment" })
   @ApiResponse({
     status: 200,
@@ -96,11 +115,164 @@ export class AppointmentController {
   })
   @ApiResponse({
     status: 404,
-    description: "Not Found - Appointment or patient not found",
+    description: "Not Found - Appointment not found",
   })
   async getAppointment(
-    @Param("appointmentId") appointmentId: number
+    @Param("appointmentId", ParseIntPipe) appointmentId: number
   ): Promise<Appointment> {
     return this.appointmentService.getAppointment(appointmentId);
+  }
+
+  @Get("doctor/:doctorId")
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Get doctor's appointments" })
+  @ApiResponse({
+    status: 200,
+    description:
+      "Return all appointments for the specified doctor with pagination",
+    type: PaginatedAppointmentResponseDto,
+  })
+  async getDoctorAppointments(
+    @CurrentUser("id") doctorId: number,
+    @Query() queryParams: PagingQueryDto
+  ): Promise<PaginatedAppointmentResponse> {
+    const dateFrom = queryParams.dateFrom
+      ? parseDateString(queryParams.dateFrom)
+      : undefined;
+    const dateTo = queryParams.dateTo
+      ? parseDateString(queryParams.dateTo)
+      : undefined;
+
+    return this.appointmentService.getAppointmentOfDoctor(
+      doctorId,
+      {
+        page: queryParams.page,
+        perPage: queryParams.perPage,
+      },
+      {
+        dateFrom,
+        dateTo,
+      },
+      queryParams.orderDirection || "DESC"
+    );
+  }
+
+  @Get("available-doctors")
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary: "Get available doctors for a specific date and time slot",
+  })
+  @ApiQuery({
+    name: "date",
+    required: true,
+    type: String,
+    description: "Date in format YYYY-MM-DD",
+  })
+  @ApiQuery({
+    name: "timeSlot",
+    required: true,
+    enum: TimeSlot,
+    description: "Time slot",
+  })
+  @ApiQuery({
+    name: "departmentId",
+    required: false,
+    type: Number,
+    description: "Optional department ID filter",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns a list of available doctors",
+    type: [Doctor],
+  })
+  async getAvailableDoctors(
+    @Query("date") date: string,
+    @Query("timeSlot") timeSlot: TimeSlot,
+    @Query("departmentId") departmentId?: number
+  ): Promise<Doctor[]> {
+    return this.appointmentService.getAvailableDoctorsForTimeSlot(
+      date,
+      timeSlot,
+      departmentId
+    );
+  }
+
+  @Get("available-time-slots")
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary:
+      "Get available time slots for a specific doctor on a specific date",
+  })
+  @ApiQuery({
+    name: "doctorId",
+    required: true,
+    type: Number,
+    description: "Doctor ID",
+  })
+  @ApiQuery({
+    name: "date",
+    required: true,
+    type: String,
+    description: "Date in format YYYY-MM-DD",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns a list of available time slots",
+    type: [String],
+  })
+  async getAvailableTimeSlots(
+    @Query("doctorId", ParseIntPipe) doctorId: number,
+    @Query("date") date: string
+  ): Promise<TimeSlot[]> {
+    return this.appointmentService.getAvailableTimeSlotsForDoctor(
+      doctorId,
+      date
+    );
+  }
+
+  @Get("check-availability")
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary: "Check if a time slot is available for a specific doctor",
+  })
+  @ApiQuery({
+    name: "doctorId",
+    required: true,
+    type: Number,
+    description: "Doctor ID",
+  })
+  @ApiQuery({
+    name: "date",
+    required: true,
+    type: String,
+    description: "Date in format YYYY-MM-DD",
+  })
+  @ApiQuery({
+    name: "timeSlot",
+    required: true,
+    enum: TimeSlot,
+    description: "Time slot",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns whether the time slot is available",
+    schema: {
+      type: "object",
+      properties: {
+        available: { type: "boolean" },
+      },
+    },
+  })
+  async checkTimeSlotAvailability(
+    @Query("doctorId", ParseIntPipe) doctorId: number,
+    @Query("date") date: string,
+    @Query("timeSlot") timeSlot: TimeSlot
+  ): Promise<{ available: boolean }> {
+    const isAvailable = await this.appointmentService.isTimeSlotAvailable(
+      doctorId,
+      date,
+      timeSlot
+    );
+    return { available: isAvailable };
   }
 }

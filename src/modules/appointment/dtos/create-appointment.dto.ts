@@ -2,30 +2,55 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsOptional,
   IsString,
-  IsEnum,
   IsDateString,
   IsNumber,
-  Max,
-  MaxLength,
+  IsPositive,
+  IsEnum,
 } from "class-validator";
-import { Column } from "typeorm";
+import { Type } from "class-transformer";
+import { TimeSlot } from "../enums/time-slot.enum";
 
 export class CreateAppointmentDto {
   @ApiProperty({
-    example: "2025-03-12 10:00:00",
-    description: "Appointment date and time",
+    example: "2025-03-12T10:00:00Z",
+    description: "Appointment date and time (ISO format)",
     required: true,
   })
-  @Column({ type: "timestamp", nullable: false })
-  dateTime: Date;
+  date: Date;
+
+  @ApiProperty({
+    example: 'a01_02',
+    description: "Appointment time slot",
+    required: true,
+  })
+  @IsEnum(TimeSlot)
+  timeSlot: TimeSlot;
+
+  @ApiProperty({
+    example: 1,
+    description: "Doctor ID",
+    required: true,
+  })
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  doctorId: number;
 
   @ApiPropertyOptional({
     example: "General Checkup",
     description: "Appointment reason",
-    required: false,
+    nullable: true,
   })
-  @Column({ type: "varchar", length: 255, nullable: true })
   @IsString()
   @IsOptional()
-  reason?: string;
+  reason: string;
+
+  @ApiPropertyOptional({
+    example: "Recurring headaches and fatigue",
+    description: "Patient notes about symptoms or concerns",
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 }

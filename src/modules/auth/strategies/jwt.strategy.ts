@@ -5,6 +5,7 @@ import { AuthService } from "@/modules/auth/auth.service";
 import { JwtPayload } from "@/modules/auth/interfaces/jwt-payload.interface";
 import { ConfigService } from "@nestjs/config";
 import { Patient } from "@/entities/patient.entity";
+import { Doctor } from "@/entities/doctor.entity";
 
 const extractJwtFromCookie: JwtFromRequestFunction = (request) => {
   return request.signedCookies["token"]!;
@@ -27,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     });
   }
 
-  validate(payload: JwtPayload): Promise<Patient> {
+  validate(payload: JwtPayload): Promise<Patient | Doctor> {
     return this.authService.verifyPayload(payload);
   }
 }
