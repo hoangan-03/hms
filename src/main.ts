@@ -7,6 +7,7 @@ import * as cookieParser from "cookie-parser";
 import * as session from "express-session";
 import {useContainer} from "class-validator";
 import * as compression from 'compression';
+import { GlobalExceptionFilter } from "./exception-filters/global-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +17,7 @@ async function bootstrap() {
   const port = configService.get("PORT") || 3000;
 
   const sessionSecret = configService.get("SESSION_SECRET") || "my-secret";
-  
+  app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.use(
     session({
       secret: sessionSecret,

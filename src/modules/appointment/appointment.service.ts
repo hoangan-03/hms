@@ -87,7 +87,6 @@ export class AppointmentService {
     { dateFrom, dateTo }: DateRangeFilter = {},
     orderDirection: "ASC" | "DESC" = "DESC"
   ): Promise<PaginatedAppointmentResponse> {
-    // Verify doctor exists
     await this.doctorService.getOne({ where: { id: doctorId } });
 
     const queryBuilder = this.appointmentRepository
@@ -213,19 +212,31 @@ export class AppointmentService {
     date: string,
     timeSlot: TimeSlot
   ): Promise<boolean> {
-    const appointmentDate = new Date(date);
-
-    // Check if the time slot is already booked
-    const existingAppointment = await this.appointmentRepository.findOne({
-      where: {
-        doctor: { id: doctorId },
-        date: appointmentDate,
-        timeSlot: timeSlot,
-      },
-    });
-
-    // If no appointment exists, the time slot is available
-    return !existingAppointment;
+    try {
+      // Validate date format
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        throw new BadRequestException(
+          `Invalid date format: ${date}. Use YYYY-MM-DD format.`
+        );
+      }
+      // Check for existing appointment
+      const existingAppointment = await this.appointmentRepository.findOne({
+        where: {
+          doctor: { id: doctorId },
+          date: dateObj,
+          timeSlot: timeSlot,
+        },
+      });
+      // Return true if no appointment exists (slot is available)
+      return !existingAppointment;
+    } catch (error) {
+      console.error("Error in isTimeSlotAvailable:", error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException("Failed to check time slot availability");
+    }
   }
 
   // Create a new appointment
@@ -233,10 +244,8 @@ export class AppointmentService {
     patientId: number,
     appointmentDto: CreateAppointmentDto
   ): Promise<Appointment> {
-    // Verify patient exists
     await this.patientService.getOne({ where: { id: patientId } });
 
-    // Verify doctor exists
     const doctor = await this.doctorService
       .getOne({
         where: { id: appointmentDto.doctorId },

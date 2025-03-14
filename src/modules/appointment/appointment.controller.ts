@@ -34,14 +34,23 @@ import { PagingQueryDto } from "../../commons/dtos/paging-query.dto";
 import { PaginatedAppointmentResponseDto } from "./dtos/paging-response-appointment.dto";
 import { Doctor } from "@/entities/doctor.entity";
 import { TimeSlot } from "./enums/time-slot.enum";
-
+import { Logger } from "@nestjs/common";
 @ApiTags("appointments")
 @UseGuards(JWTAuthGuard, RolesGuard)
 @Controller("appointments")
 @UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class AppointmentController {
+  private readonly logger = new Logger(AppointmentController.name);
   constructor(private readonly appointmentService: AppointmentService) {}
+  // Add a debug endpoint to verify routing is working
+  @Get("debug")
+  @Roles(Role.PATIENT)
+  debug(): string {
+    this.logger.log("Debug endpoint called");
+    console.log("Debug console log test");
+    return "Debug endpoint working";
+  }
 
   @Get()
   @Roles(Role.PATIENT)
@@ -103,58 +112,6 @@ export class AppointmentController {
     @Body() appointmentDto: CreateAppointmentDto
   ): Promise<Appointment> {
     return this.appointmentService.createAppointment(patientId, appointmentDto);
-  }
-
-  @Get(":appointmentId")
-  @Roles(Role.PATIENT, Role.DOCTOR)
-  @ApiOperation({ summary: "Get specific appointment" })
-  @ApiResponse({
-    status: 200,
-    description: "Return specific appointment",
-    type: Appointment,
-  })
-  @ApiResponse({
-    status: 404,
-    description: "Not Found - Appointment not found",
-  })
-  async getAppointment(
-    @Param("appointmentId", ParseIntPipe) appointmentId: number
-  ): Promise<Appointment> {
-    return this.appointmentService.getAppointment(appointmentId);
-  }
-
-  @Get("doctor/:doctorId")
-  @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Get doctor's appointments" })
-  @ApiResponse({
-    status: 200,
-    description:
-      "Return all appointments for the specified doctor with pagination",
-    type: PaginatedAppointmentResponseDto,
-  })
-  async getDoctorAppointments(
-    @CurrentUser("id") doctorId: number,
-    @Query() queryParams: PagingQueryDto
-  ): Promise<PaginatedAppointmentResponse> {
-    const dateFrom = queryParams.dateFrom
-      ? parseDateString(queryParams.dateFrom)
-      : undefined;
-    const dateTo = queryParams.dateTo
-      ? parseDateString(queryParams.dateTo)
-      : undefined;
-
-    return this.appointmentService.getAppointmentOfDoctor(
-      doctorId,
-      {
-        page: queryParams.page,
-        perPage: queryParams.perPage,
-      },
-      {
-        dateFrom,
-        dateTo,
-      },
-      queryParams.orderDirection || "DESC"
-    );
   }
 
   @Get("available-doctors")
@@ -264,15 +221,69 @@ export class AppointmentController {
     },
   })
   async checkTimeSlotAvailability(
-    @Query("doctorId", ParseIntPipe) doctorId: number,
+    @Query("doctorId") doctorId: number,
     @Query("date") date: string,
     @Query("timeSlot") timeSlot: TimeSlot
   ): Promise<{ available: boolean }> {
+    console.log("doctorId", doctorId);
+
     const isAvailable = await this.appointmentService.isTimeSlotAvailable(
       doctorId,
       date,
       timeSlot
     );
     return { available: isAvailable };
+  }
+
+  @Get(":appointmentId")
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: "Get specific appointment" })
+  @ApiResponse({
+    status: 200,
+    description: "Return specific appointment",
+    type: Appointment,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Not Found - Appointment not found",
+  })
+  async getAppointment(
+    @Param("appointmentId", ParseIntPipe) appointmentId: number
+  ): Promise<Appointment> {
+    return this.appointmentService.getAppointment(appointmentId);
+  }
+
+  @Get("doctor/:doctorId")
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Get doctor's appointments" })
+  @ApiResponse({
+    status: 200,
+    description:
+      "Return all appointments for the specified doctor with pagination",
+    type: PaginatedAppointmentResponseDto,
+  })
+  async getDoctorAppointments(
+    @CurrentUser("id") doctorId: number,
+    @Query() queryParams: PagingQueryDto
+  ): Promise<PaginatedAppointmentResponse> {
+    const dateFrom = queryParams.dateFrom
+      ? parseDateString(queryParams.dateFrom)
+      : undefined;
+    const dateTo = queryParams.dateTo
+      ? parseDateString(queryParams.dateTo)
+      : undefined;
+
+    return this.appointmentService.getAppointmentOfDoctor(
+      doctorId,
+      {
+        page: queryParams.page,
+        perPage: queryParams.perPage,
+      },
+      {
+        dateFrom,
+        dateTo,
+      },
+      queryParams.orderDirection || "DESC"
+    );
   }
 }
