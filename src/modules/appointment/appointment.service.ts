@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { PatientService } from "../patient/patient.service";
 import { DoctorService } from "../doctor/doctor.service";
-import { formatStartDate } from "@/utils/parse-date-string";
+import { formatAsDDMMYYYY, formatStartDate } from "@/utils/parse-date-string";
 import {
   PaginationParams,
   DateRangeFilter,
@@ -18,6 +18,7 @@ import { CreateAppointmentDto } from "./dtos/create-appointment.dto";
 import { Doctor } from "@/entities/doctor.entity";
 import { TimeSlot } from "./enums/time-slot.enum";
 import { AppointmentStatus } from "./enums/appointment-status.enum";
+import { timeSlotToString } from "@/utils/time-slot-to-string";
 
 @Injectable()
 export class AppointmentService {
@@ -213,13 +214,7 @@ export class AppointmentService {
     timeSlot: TimeSlot
   ): Promise<boolean> {
     try {
-      // Validate date format
       const dateObj = new Date(date);
-      if (isNaN(dateObj.getTime())) {
-        throw new BadRequestException(
-          `Invalid date format: ${date}. Use YYYY-MM-DD format.`
-        );
-      }
       // Check for existing appointment
       const existingAppointment = await this.appointmentRepository.findOne({
         where: {
@@ -228,7 +223,6 @@ export class AppointmentService {
           timeSlot: timeSlot,
         },
       });
-      // Return true if no appointment exists (slot is available)
       return !existingAppointment;
     } catch (error) {
       console.error("Error in isTimeSlotAvailable:", error);
@@ -266,7 +260,11 @@ export class AppointmentService {
 
     if (!isAvailable) {
       throw new BadRequestException(
-        `This time slot is already booked with Dr. ${doctor.name} on ${appointmentDto.date}`
+        `This time slot ${timeSlotToString(
+          appointmentDto.timeSlot
+        )} is already booked with Dr. ${doctor.name} on ${formatAsDDMMYYYY(
+          appointmentDto.date
+        )}`
       );
     }
 
@@ -297,6 +295,28 @@ export class AppointmentService {
       appointment
     );
 
+    return this.getAppointment(updatedAppointment.id);
+  }
+
+  // Confirm an appointment
+  async confirmAppointment(id: number): Promise<Appointment> {
+    const appointment = await this.getAppointment(id);
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+  
+    // Check if appointment is already cancelled
+    if (appointment.status === AppointmentStatus.CANCELLED) {
+      throw new BadRequestException(
+        `Cannot confirm appointment with ID ${id} because it has been cancelled`
+      );
+    }
+  
+    appointment.status = AppointmentStatus.COMFIRMED;
+    const updatedAppointment = await this.appointmentRepository.save(
+      appointment
+    );
+  
     return this.getAppointment(updatedAppointment.id);
   }
 

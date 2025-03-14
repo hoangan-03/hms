@@ -19,7 +19,7 @@ export class CreateAppointmentDto {
   date: Date;
 
   @ApiProperty({
-    example: 'a01_02',
+    example: 'a1_2',
     description: "Appointment time slot",
     required: true,
   })

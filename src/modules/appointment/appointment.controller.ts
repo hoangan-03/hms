@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  Patch,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -34,23 +35,14 @@ import { PagingQueryDto } from "../../commons/dtos/paging-query.dto";
 import { PaginatedAppointmentResponseDto } from "./dtos/paging-response-appointment.dto";
 import { Doctor } from "@/entities/doctor.entity";
 import { TimeSlot } from "./enums/time-slot.enum";
-import { Logger } from "@nestjs/common";
+
 @ApiTags("appointments")
 @UseGuards(JWTAuthGuard, RolesGuard)
 @Controller("appointments")
 @UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class AppointmentController {
-  private readonly logger = new Logger(AppointmentController.name);
   constructor(private readonly appointmentService: AppointmentService) {}
-  // Add a debug endpoint to verify routing is working
-  @Get("debug")
-  @Roles(Role.PATIENT)
-  debug(): string {
-    this.logger.log("Debug endpoint called");
-    console.log("Debug console log test");
-    return "Debug endpoint working";
-  }
 
   @Get()
   @Roles(Role.PATIENT)
@@ -251,6 +243,58 @@ export class AppointmentController {
     @Param("appointmentId", ParseIntPipe) appointmentId: number
   ): Promise<Appointment> {
     return this.appointmentService.getAppointment(appointmentId);
+  }
+
+  @Patch(":appointmentId/cancel")
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Cancel appointment" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment canceled successfully",
+    type: Appointment,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request - Invalid input data",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Not Found - Appointment not found",
+  })
+  async cancelAppointment(
+    @Param("appointmentId", ParseIntPipe) appointmentId: number
+  ): Promise<Appointment> {
+    return this.appointmentService.cancelAppointment(appointmentId);
+  }
+
+  @Patch(":appointmentId/confirm")
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Confirm appointment" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment confirmed successfully",
+    type: Appointment,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request - Invalid input data",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Not Found - Appointment not found",
+  })
+  async confirmAppointment(
+    @Param("appointmentId", ParseIntPipe) appointmentId: number
+  ): Promise<Appointment> {
+    return this.appointmentService.confirmAppointment(appointmentId);
   }
 
   @Get("doctor/:doctorId")
