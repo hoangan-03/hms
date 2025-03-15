@@ -30,6 +30,7 @@ import { RegisterUserResponseDto } from "@/modules/auth/dtos/register-user-respo
 import { Patient } from "@/entities/patient.entity";
 import { CurrentUser } from "./decorators/user.decorator";
 import { Doctor } from "@/entities/doctor.entity";
+import { GoogleAuthGuard } from "./guards/google-auth.guard";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -83,21 +84,21 @@ export class AuthController {
     return this.authService.login(user, response);
   }
 
-  @Get('/me')
+  @Get("/me")
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Returns the current authenticated user',
+  @ApiOperation({ summary: "Get current user profile" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the current authenticated user",
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'Unauthorized - Invalid or missing token' 
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
   })
   me(@CurrentUser() user: Patient | Doctor): Patient | Doctor {
     if (!user) {
-      throw new UnauthorizedException('Authentication required');
+      throw new UnauthorizedException("Authentication required");
     }
     return this.authService.getUserProfile(user);
   }
@@ -128,5 +129,27 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response
   ): Promise<{ message: string }> {
     return this.authService.logout(response);
+  }
+
+  // @Get("google")
+  // @UseGuards(GoogleAuthGuard)
+  // @ApiOperation({ summary: "Initiate Google OAuth login" })
+  // googleAuth() {
+  //   // Redirect to Google OAuth
+  // }
+
+  @Get("google/callback")
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: "Handle Google OAuth callback" })
+  @ApiResponse({
+    status: 200,
+    description: "User successfully logged in with Google",
+    type: AuthTokenResponseDto,
+  })
+  async googleAuthCallback(
+    @CurrentUser() user: Patient,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.googleLogin(user, response);
   }
 }

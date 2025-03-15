@@ -17,6 +17,7 @@ import { RegisterUserResponseDto } from "./dtos/register-user-response.dto";
 import { DoctorService } from "../doctor/doctor.service";
 import { Doctor } from "@/entities/doctor.entity";
 import { Role } from "@/modules/auth/enums/role.enum";
+import { GoogleUserData } from "./interfaces/google-user.interface";
 
 @Injectable()
 export class AuthService {
@@ -31,31 +32,19 @@ export class AuthService {
     response: Response
   ): Promise<RegisterUserResponseDto> {
     try {
-      // Hash password and create user
       const hashedPassword = await hashPassword(signUp.password);
       const user = await this.patientService.create({
         ...signUp,
         password: hashedPassword,
       });
 
-      // Generate tokens
       const tokens = this.generateTokens(user);
-
-      // Set auth cookies and headers
       this.setAuthCookies(response, tokens);
-
-      // Return response DTO
       return new RegisterUserResponseDto(user.username);
-    } catch (error) {
-      if (error instanceof Error) {
-        if ("code" in error && (error as any).code === "23505") {
-          throw new BadRequestException("Email or username already exists.");
-        }
-        throw new InternalServerErrorException(
-          error.message || "Registration failed."
-        );
-      }
-      throw new InternalServerErrorException("An unexpected error occurred.");
+    } catch (error: any) {
+      throw new InternalServerErrorException(
+        error.message || "Registration failed."
+      );
     }
   }
 
@@ -64,9 +53,7 @@ export class AuthService {
     response: Response
   ): Promise<AuthTokenResponseDto> {
     const tokens = this.generateTokens(user);
-    // Set auth cookies and headers
     this.setAuthCookies(response, tokens);
-
     return tokens;
   }
 
@@ -107,9 +94,8 @@ export class AuthService {
   async verifyPayload(payload: JwtPayload): Promise<Patient | Doctor> {
     const userId = Number(payload.sub);
     const role = payload.role;
-    
+
     try {
-      // Try the appropriate service based on the role in the token
       if (role === Role.DOCTOR) {
         return await this.doctorService.getOne({ where: { id: userId } });
       } else {
@@ -122,26 +108,25 @@ export class AuthService {
     }
   }
 
-  async validateUser(username: string, password: string): Promise<Patient | Doctor> {
+  async validateUser(
+    username: string,
+    password: string
+  ): Promise<Patient | Doctor> {
     let user: Patient | Doctor;
-  
+
     try {
-      // Try to find a patient first
       try {
         user = await this.patientService.getOne({ where: { username } });
       } catch (err) {
-        // If not found, try to find a doctor
         try {
           user = await this.doctorService.getOne({ where: { username } });
         } catch (err) {
           throw new UnauthorizedException(`Invalid credentials`);
         }
       }
-  
       if (!(await checkPassword(password, user.password || ""))) {
         throw new UnauthorizedException(`Invalid credentials`);
       }
-  
       return user;
     } catch (err) {
       throw new UnauthorizedException(`Invalid credentials`);
@@ -162,9 +147,50 @@ export class AuthService {
       secure: process.env.NODE_ENV === "production",
     });
 
-    // Remove the authorization header if present
+    // Remove the authorization header
     response.removeHeader("Authorization");
 
     return { message: "Logged out successfully" };
+  }
+
+  async validateOrCreateGoogleUser(userData: GoogleUserData): Promise<Patient> {
+    const { email, firstName, lastName } = userData;
+
+    try {
+      const user = await this.patientService.getOne({
+        where: { username: email },
+      });
+      return user;
+    } catch (error) {
+      const randomPassword =
+        Math.random().toString(36).slice(-10) +
+        Math.random().toString(36).slice(-10) +
+        "A1@";
+
+      const hashedPassword = await hashPassword(randomPassword);
+
+      const newUser = await this.patientService.create({
+        username: email,
+        password: hashedPassword,
+        name: `${firstName} ${lastName}`,
+        role: Role.PATIENT,
+      });
+
+      return newUser;
+    }
+  }
+
+  async googleLogin(
+    user: Patient,
+    response: Response
+  ): Promise<AuthTokenResponseDto> {
+    if (!user) {
+      throw new UnauthorizedException("No user from Google");
+    }
+
+    const tokens = this.generateTokens(user);
+    this.setAuthCookies(response, tokens);
+
+    return tokens;
   }
 }

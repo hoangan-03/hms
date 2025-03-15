@@ -11,21 +11,5 @@ import { ApiTags } from '@nestjs/swagger';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
 
-  @Get('protected')
-  @UseGuards(JWTAuthGuard)
-  getProtected(@CurrentUser() user: Patient | Doctor): { message: string, user: any } {
-    return {
-      message: 'This route is protected',
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role
-      }
-    };
-  }
 }
