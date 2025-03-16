@@ -10,6 +10,7 @@ import { LocalStrategy } from '@/modules/auth/strategies/local.strategy';
 import { PatientModule } from '../patient/patient.module';
 import { DoctorModule } from '../doctor/doctor.module';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 @Module({
   imports: [
     ConfigModule,
@@ -32,6 +33,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy,  GoogleStrategy, JwtStrategy, SessionSerializer],
+  providers: [AuthService, LocalStrategy, FacebookStrategy,   GoogleStrategy, JwtStrategy, SessionSerializer],
 })
 export class AuthModule {}

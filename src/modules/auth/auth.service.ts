@@ -18,6 +18,7 @@ import { DoctorService } from "../doctor/doctor.service";
 import { Doctor } from "@/entities/doctor.entity";
 import { Role } from "@/modules/auth/enums/role.enum";
 import { GoogleUserData } from "./interfaces/google-user.interface";
+import { FacebookUserData } from "./interfaces/facebook-user.interface";
 
 @Injectable()
 export class AuthService {
@@ -180,6 +181,8 @@ export class AuthService {
     }
   }
 
+  
+
   async googleLogin(
     user: Patient,
     response: Response
@@ -193,4 +196,57 @@ export class AuthService {
 
     return tokens;
   }
+
+  // Replace or extend the validateOrCreateGoogleUser method with this:
+async validateOrCreateSocialUser(userData: FacebookUserData): Promise<Patient> {
+  const { email, firstName, lastName, provider, providerId } = userData;
+
+  try {
+    // Try to find existing user by email
+    const user = await this.patientService.getOne({
+      where: { username: email },
+    });
+    return user;
+  } catch (error) {
+    // Generate a random secure password
+    const randomPassword =
+      Math.random().toString(36).slice(-10) +
+      Math.random().toString(36).slice(-10) +
+      "A1@";
+
+    const hashedPassword = await hashPassword(randomPassword);
+    
+    // Store the social login information for future reference
+    const metadata = {
+      socialProvider: provider,
+      socialProviderId: providerId
+    };
+
+    const newUser = await this.patientService.create({
+      username: email,
+      password: hashedPassword,
+      name: `${firstName} ${lastName}`,
+      role: Role.PATIENT,
+      // If you have a metadata field in your patient entity:
+      // metadata: JSON.stringify(metadata)
+    });
+
+    return newUser;
+  }
+}
+
+// Update or rename googleLogin to handle any social login
+async socialLogin(
+  user: Patient,
+  response: Response
+): Promise<AuthTokenResponseDto> {
+  if (!user) {
+    throw new UnauthorizedException("No user from social login");
+  }
+
+  const tokens = this.generateTokens(user);
+  this.setAuthCookies(response, tokens);
+
+  return tokens;
+}
 }

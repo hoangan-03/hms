@@ -31,6 +31,7 @@ import { Patient } from "@/entities/patient.entity";
 import { CurrentUser } from "./decorators/user.decorator";
 import { Doctor } from "@/entities/doctor.entity";
 import { GoogleAuthGuard } from "./guards/google-auth.guard";
+import { FacebookAuthGuard } from "./guards/facebook-auth.guard";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -151,5 +152,27 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response
   ) {
     return this.authService.googleLogin(user, response);
+  }
+
+  // @Get("facebook")
+  // @UseGuards(FacebookAuthGuard)
+  // @ApiOperation({ summary: "Initiate Facebook OAuth login" })
+  // facebookAuth() {
+  //   // This will redirect to Facebook OAuth
+  // }
+
+  @Get("facebook/callback")
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({ summary: "Handle Facebook OAuth callback" })
+  @ApiResponse({
+    status: 200,
+    description: "User successfully logged in with Facebook",
+    type: AuthTokenResponseDto,
+  })
+  async facebookAuthCallback(
+    @CurrentUser() user: Patient,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.socialLogin(user, response);
   }
 }
