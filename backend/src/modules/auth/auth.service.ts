@@ -1,6 +1,5 @@
 import { Response } from "express";
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -34,7 +33,7 @@ export class AuthService {
   ): Promise<RegisterUserResponseDto> {
     try {
       const hashedPassword = await hashPassword(signUp.password);
-      const user = await this.patientService.create({
+      const user: Patient = await this.patientService.create({
         ...signUp,
         password: hashedPassword,
       });
@@ -181,8 +180,6 @@ export class AuthService {
     }
   }
 
-  
-
   async googleLogin(
     user: Patient,
     response: Response
@@ -197,56 +194,54 @@ export class AuthService {
     return tokens;
   }
 
-  // Replace or extend the validateOrCreateGoogleUser method with this:
-async validateOrCreateSocialUser(userData: FacebookUserData): Promise<Patient> {
-  const { email, firstName, lastName, provider, providerId } = userData;
+  async validateOrCreateFacebookUser(
+    userData: FacebookUserData
+  ): Promise<Patient> {
+    const { email, firstName, lastName, provider, providerId } = userData;
 
-  try {
-    // Try to find existing user by email
-    const user = await this.patientService.getOne({
-      where: { username: email },
-    });
-    return user;
-  } catch (error) {
-    // Generate a random secure password
-    const randomPassword =
-      Math.random().toString(36).slice(-10) +
-      Math.random().toString(36).slice(-10) +
-      "A1@";
+    try {
+      const user = await this.patientService.getOne({
+        where: { username: email },
+      });
+      return user;
+    } catch (error) {
+      const randomPassword =
+        Math.random().toString(36).slice(-10) +
+        Math.random().toString(36).slice(-10) +
+        "A1@";
 
-    const hashedPassword = await hashPassword(randomPassword);
-    
-    // Store the social login information for future reference
-    const metadata = {
-      socialProvider: provider,
-      socialProviderId: providerId
-    };
+      const hashedPassword = await hashPassword(randomPassword);
 
-    const newUser = await this.patientService.create({
-      username: email,
-      password: hashedPassword,
-      name: `${firstName} ${lastName}`,
-      role: Role.PATIENT,
-      // If you have a metadata field in your patient entity:
-      // metadata: JSON.stringify(metadata)
-    });
+      // For future reference
+      const metadata = {
+        socialProvider: provider,
+        socialProviderId: providerId,
+      };
 
-    return newUser;
-  }
-}
+      const newUser = await this.patientService.create({
+        username: email,
+        password: hashedPassword,
+        name: `${firstName} ${lastName}`,
+        role: Role.PATIENT,
+        // If have a metadata field in patient entity:
+        // metadata: JSON.stringify(metadata)
+      });
 
-// Update or rename googleLogin to handle any social login
-async socialLogin(
-  user: Patient,
-  response: Response
-): Promise<AuthTokenResponseDto> {
-  if (!user) {
-    throw new UnauthorizedException("No user from social login");
+      return newUser;
+    }
   }
 
-  const tokens = this.generateTokens(user);
-  this.setAuthCookies(response, tokens);
+  async facebookLogin(
+    user: Patient,
+    response: Response
+  ): Promise<AuthTokenResponseDto> {
+    if (!user) {
+      throw new UnauthorizedException("No user from social login");
+    }
 
-  return tokens;
-}
+    const tokens = this.generateTokens(user);
+    this.setAuthCookies(response, tokens);
+
+    return tokens;
+  }
 }

@@ -173,6 +173,6 @@ export class AuthController {
     @CurrentUser() user: Patient,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.authService.socialLogin(user, response);
+    return this.authService.facebookLogin(user, response);
   }
 }
