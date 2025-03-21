@@ -1,0 +1,1 @@
+export const ACCESS_TOKEN_EXPIRES_IN_MINUTES = 60;

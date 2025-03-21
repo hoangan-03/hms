@@ -4,3 +4,8 @@ import {twMerge} from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+
+export function range(start: number, end: number) {
+    const length = end - start + 1;
+    return Array.from({length}, (_, idx) => idx + start);
+}
