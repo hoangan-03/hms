@@ -2,8 +2,8 @@ import {Outlet} from 'react-router-dom';
 
 function AuthLayout() {
     return (
-        <div className='bg-grey-F9F9FC'>
-            <div className='relative container grid min-h-screen grid-cols-12 bg-white'>
+        <div className='bg-gray-50'>
+            <div className='relative container grid min-h-screen grid-cols-12'>
                 <Outlet />
             </div>
         </div>

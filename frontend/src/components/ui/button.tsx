@@ -15,12 +15,13 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                primary: 'bg-primary-light text-white shadow-xs hover:bg-primary-light/90',
+                primary: 'bg-primary text-white shadow-xs hover:bg-primary/90',
                 none: '',
             },
             size: {
                 primary: 'py-3 px-2',
                 sm: 'py-2 px-2',
+                md: 'py-4 px-4',
                 none: '',
             },
         },

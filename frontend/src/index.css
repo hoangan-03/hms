@@ -4,10 +4,10 @@
 
 @theme {
     /* Color */
-    --color-primary: #211c84;
-    --color-primary-light: #4d55cc;
-    --color-secondary: #7a73d1;
-    --color-secondary-light: #b5a8d5;
+    --color-primary: #205781;
+    --color-primary-light: #4f959d;
+    --color-secondary: #98d2c0;
+    --color-secondary-light: #f6f8d5;
     --color-success: #00b69b;
     --color-error: #ef3826;
     --color-warning: #ffa756;
@@ -17,6 +17,10 @@
     --color-202224: #202224;
     --color-d5d5d5: #d5d5d5;
     --color-f5f6fa: #f5f6fa;
+    --color-404040: #404040;
+    --color-565656: #565656;
+    --color-5c5c5c: #5c5c5c;
+    --color-718096: #718096;
 
     /* Font */
     --font-family: 'Nunito Sans', sans-serif;
@@ -30,9 +34,6 @@
     --text-2xl: 1.5rem; /* 24px */
     --text-3xl: 1.875rem; /* 30px */
     --text-4xl: 2.25rem; /* 36px */
-
-    /* Radius */
-    --radius-20: 20px;
 }
 
 @utility container {
@@ -50,6 +51,12 @@
     } */
     body {
         @apply font-family;
+    }
+    p {
+        @apply text-sm;
+    }
+    h1 {
+        @apply text-3xl font-bold;
     }
 }
 

@@ -21,6 +21,10 @@ const protectedRoutes = [
         path: ENUM_ROUTES.HOME,
         element: <Page.HomePage />,
     },
+    {
+        path: ENUM_ROUTES.PATIENTS,
+        element: <Page.PatientsPage />,
+    },
 ];
 
 const authRoutes = [
