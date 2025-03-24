@@ -1,9 +1,13 @@
-import { Patient } from '@/entities/patient.entity';
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Patient } from "@/entities/patient.entity";
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
-export class JWTAuthGuard extends AuthGuard('jwt') {
+export class JWTAuthGuard extends AuthGuard("jwt") {
   canActivate(context: ExecutionContext) {
     return super.canActivate(context);
   }
@@ -16,7 +20,7 @@ export class JWTAuthGuard extends AuthGuard('jwt') {
   //     throw new UnauthorizedException(
   //       info ? info.message : 'Authentication required'
   //     );
-     
+
   //   }
   //   return patient;
   // }
