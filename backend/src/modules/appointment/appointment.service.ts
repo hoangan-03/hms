@@ -304,19 +304,19 @@ export class AppointmentService {
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
-  
+
     // Check if appointment is already cancelled
     if (appointment.status === AppointmentStatus.CANCELLED) {
       throw new BadRequestException(
         `Cannot confirm appointment with ID ${id} because it has been cancelled`
       );
     }
-  
+
     appointment.status = AppointmentStatus.COMFIRMED;
     const updatedAppointment = await this.appointmentRepository.save(
       appointment
     );
-  
+
     return this.getAppointment(updatedAppointment.id);
   }
 
