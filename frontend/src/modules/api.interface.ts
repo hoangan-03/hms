@@ -1,21 +1,24 @@
 export interface ResponseAPI<TData> {
-    status: number;
-    message: string;
+    // status: number;
+    message?: string;
     data: TData;
-    error?: object; // can be any key-value pair
+    // error?: object; // can be any key-value pair
 }
 
 export interface PaginationRequest {
     page?: number;
-    limit?: number;
-    search?: string;
+    perPage?: number;
+    dateFrom?: string; // 'DD-MM-YYYY'
+    dateTo?: string; // 'DD-MM-YYYY'
+    orderDirection?: 'ASC' | 'DESC';
 }
 
 export interface PaginationResponse<TData> {
     pagination: {
-        currentPage: number;
+        page: number;
         perPage: number;
         totalItems: number;
+        totalPages: number;
     };
     data: TData;
 }

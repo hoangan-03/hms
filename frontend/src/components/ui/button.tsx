@@ -16,12 +16,14 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary: 'bg-primary text-white shadow-xs hover:bg-primary/90',
+                cancel: 'bg-slate-200 text-slate-950 shadow-xs hover:bg-slate-300',
                 none: '',
             },
             size: {
                 primary: 'py-3 px-2',
                 sm: 'py-2 px-2',
                 md: 'py-4 px-4',
+                icon: 'w-fit h-fit',
                 none: '',
             },
         },

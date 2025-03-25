@@ -82,7 +82,7 @@ function DataTable<TData, TValue>({
                                 <Fragment key={row.id}>
                                     <TableRow
                                         data-state={row.getIsSelected() && 'selected'}
-                                        className={cn('hover:bg-grey-F9F9FC', renderChildRow && 'cursor-pointer')}
+                                        className={cn('hover:bg-slate-300', renderChildRow && 'cursor-pointer')}
                                         {...(renderChildRow && {
                                             onClick: () => {
                                                 row.toggleExpanded();
