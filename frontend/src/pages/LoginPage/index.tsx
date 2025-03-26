@@ -1,10 +1,44 @@
+import {useForm} from 'react-hook-form';
 import {Link} from 'react-router-dom';
+import {toast} from 'react-toastify';
 
 import {Icon} from '@/components/common';
 import {Button, Input, Label, Separator} from '@/components/ui';
+import {useAuthContext} from '@/context/AuthProvider';
+import {ILoginRequest} from '@/modules/auth/auth.interface';
+import {AuthService} from '@/modules/auth/auth.service';
+import {signInResolver} from '@/modules/auth/auth.validate';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
 
+type FormValues = ILoginRequest;
+
 function LoginPage() {
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: {errors, isSubmitting, isDirty},
+    } = useForm<FormValues>({
+        resolver: signInResolver,
+        defaultValues: {
+            username: '',
+            password: '',
+        },
+    });
+    const {setIsAuth, setDidClickLogout} = useAuthContext();
+
+    const onSubmit = async () => {
+        try {
+            const response = await AuthService.login(payload);
+            setIsAuth(true);
+            setDidClickLogout(false);
+            toast.success('Login successfully!');
+        } catch (error) {
+            console.error(error);
+            toast.error('Login failed!');
+        }
+    };
+
     return (
         <>
             <div className='col-span-6 bg-slate-200 p-12'>
@@ -21,11 +55,11 @@ function LoginPage() {
                             </Link>
                         </div>
                     </div>
-                    <form className='space-y-10'>
+                    <form onSubmit={handleSubmit(onSubmit)} className='space-y-10'>
                         <div className='space-y-7'>
                             <div className='space-y-4'>
-                                <Label className='text-718096 text-base'>Email</Label>
-                                <Input placeholder='example@gmail.com' />
+                                <Label className='text-718096 text-base'>Username</Label>
+                                <Input autoComplete='username' placeholder='myusername' />
                             </div>
                             <div className='space-y-4'>
                                 <Label className='text-718096 text-base'>Password</Label>

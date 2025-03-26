@@ -1,25 +1,26 @@
 import {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
-import {useCallback, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {toast} from 'react-toastify';
 
-import {ACCESS_TOKEN_EXPIRES_IN_MINUTES} from '@/constants/common';
-import {timeZoneOptions} from '@/constants/dateTime';
+// import {ACCESS_TOKEN_EXPIRES_IN_MINUTES} from '@/constants/common';
+// import {timeZoneOptions} from '@/constants/dateTime';
+// import {IAuthToken} from '@/modules/auth/auth.interface';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
 
 import {axiosInstance} from './axios';
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+// const isRefreshing = false;
+// let refreshSubscribers: ((token: string) => void)[] = [];
 
-function onRefreshTokenComplete(newToken: string) {
-    refreshSubscribers.forEach((callback) => callback(newToken));
-    refreshSubscribers = [];
-}
+// function onRefreshTokenComplete(newToken: string) {
+//     refreshSubscribers.forEach((callback) => callback(newToken));
+//     refreshSubscribers = [];
+// }
 
-function addRefreshSubscriber(callback: (token: string) => void) {
-    refreshSubscribers.push(callback);
-}
+// function addRefreshSubscriber(callback: (token: string) => void) {
+//     refreshSubscribers.push(callback);
+// }
 
 const showToastError = (error: string, toastId: string) => {
     if (!toast.isActive(toastId)) {
@@ -34,32 +35,32 @@ function AxiosInterceptor() {
     const {pathname, search} = useLocation();
     const redirectUrl = search ? pathname + search : pathname;
 
-    const refreshToken = useCallback(async (token: IAuthToken & {rememberMe: boolean}) => {
-        const expirationDate =
-            new Date(token.createdAt).getTime() + token.expiresIn * 1000 - ACCESS_TOKEN_EXPIRES_IN_MINUTES * 60 * 1000;
-        const currentDate = new Date(new Intl.DateTimeFormat('en-US', timeZoneOptions).format(new Date())).getTime();
+    // const refreshToken = useCallback(async (token: IAuthToken & {rememberMe: boolean}) => {
+    //     const expirationDate =
+    //         new Date(token.createdAt).getTime() + token.expiresIn * 1000 - ACCESS_TOKEN_EXPIRES_IN_MINUTES * 60 * 1000;
+    //     const currentDate = new Date(new Intl.DateTimeFormat('en-US', timeZoneOptions).format(new Date())).getTime();
 
-        if (expirationDate < new Date(currentDate).getTime() && token.rememberMe === true) {
-            const payload: IRefreshTokenRequest = {
-                refreshToken: token.refreshToken,
-            };
-            const response = await AuthService.refreshToken(payload);
-            const data = response.data.data;
+    //     if (expirationDate < new Date(currentDate).getTime() && token.rememberMe === true) {
+    //         const payload: IRefreshTokenRequest = {
+    //             refreshToken: token.refreshToken,
+    //         };
+    //         const response = await AuthService.refreshToken(payload);
+    //         const data = response.data.data;
 
-            token = {...data, rememberMe: token.rememberMe};
+    //         token = {...data, rememberMe: token.rememberMe};
 
-            localStorage.setItem('token', JSON.stringify(token));
-        }
-        return token;
-    }, []);
+    //         // localStorage.setItem('token', JSON.stringify(token));
+    //     }
+    //     return token;
+    // }, []);
 
     useEffect(() => {
         const successRequestInterceptor = async (config: InternalAxiosRequestConfig) => {
-            const tokenString = localStorage.getItem('token');
-            if (tokenString) {
-                const token: IAuthToken & {rememberMe: boolean} = JSON.parse(tokenString);
-                config.headers.Authorization = `${token.tokenType} ${token.accessToken}`;
-            }
+            // const tokenString = localStorage.getItem('token');
+            // if (tokenString) {
+            //     const token: IAuthToken & {rememberMe: boolean} = JSON.parse(tokenString);
+            //     config.headers.Authorization = `${token.tokenType} ${token.accessToken}`;
+            // }
             return config;
         };
 
@@ -83,44 +84,46 @@ function AxiosInterceptor() {
                 switch (status) {
                     case 401:
                         {
-                            try {
-                                if (error.config?.url === AuthService.ROUTES.refreshToken) {
-                                    throw error;
-                                } else {
-                                    // Add API callback to queue
-                                    new Promise<string>((resolve) => {
-                                        addRefreshSubscriber(resolve);
-                                    });
+                            // try {
+                            //     if (error.config?.url === AuthService.ROUTES.refreshToken) {
+                            //         throw error;
+                            //     } else {
+                            //         // Add API callback to queue
+                            //         new Promise<string>((resolve) => {
+                            //             addRefreshSubscriber(resolve);
+                            //         });
 
-                                    if (!isRefreshing) {
-                                        try {
-                                            isRefreshing = true;
+                            //         if (!isRefreshing) {
+                            //             try {
+                            //                 isRefreshing = true;
 
-                                            // Get new token
-                                            const tokenString = localStorage.getItem('token') || '';
-                                            const token: IAuthToken & {rememberMe: boolean} = JSON.parse(tokenString);
-                                            if (token.rememberMe === false) {
-                                                toast.error('Session expired');
-                                                throw error;
-                                            }
-                                            const newToken = await refreshToken(token);
+                            //                 // Get new token
+                            //                 // const tokenString = localStorage.getItem('token') || '';
+                            //                 const token: IAuthToken & {rememberMe: boolean} = JSON.parse(tokenString);
+                            //                 if (token.rememberMe === false) {
+                            //                     toast.error('Session expired');
+                            //                     throw error;
+                            //                 }
+                            //                 const newToken = await refreshToken(token);
 
-                                            // Call API callback with new token
-                                            onRefreshTokenComplete(newToken.accessToken);
-                                        } catch (error) {
-                                            refreshSubscribers = [];
-                                            throw error;
-                                        } finally {
-                                            isRefreshing = false;
-                                        }
-                                    }
-                                }
-                            } catch (error) {
-                                localStorage.clear();
-                                refreshSubscribers = [];
-                                let navigateTo = ENUM_ROUTES.LOGIN as string;
-                                navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`));
-                            }
+                            //                 // Call API callback with new token
+                            //                 onRefreshTokenComplete(newToken.accessToken);
+                            //             } catch (error) {
+                            //                 refreshSubscribers = [];
+                            //                 throw error;
+                            //             } finally {
+                            //                 isRefreshing = false;
+                            //             }
+                            //         }
+                            //     }
+                            // } catch (error) {
+                            //     // localStorage.clear();
+                            //     refreshSubscribers = [];
+                            //     let navigateTo = ENUM_ROUTES.LOGIN as string;
+                            //     navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`));
+                            // }
+                            let navigateTo = ENUM_ROUTES.LOGIN as string;
+                            navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`));
                         }
                         break;
                     case 403:
@@ -166,7 +169,7 @@ function AxiosInterceptor() {
             axiosInstance.interceptors.request.eject(requestInterceptor);
             axiosInstance.interceptors.response.eject(responseInterceptor);
         };
-    }, [navigate, refreshToken, redirectUrl]);
+    }, [navigate, redirectUrl]);
 
     return hasIntercepted && <Outlet />;
 }
