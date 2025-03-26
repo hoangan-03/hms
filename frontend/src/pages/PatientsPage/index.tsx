@@ -3,6 +3,7 @@ import {useReducer} from 'react';
 
 import {DataTable, Icon} from '@/components/common';
 import {Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui';
+import {useAuthContext} from '@/context/AuthProvider';
 import {capitalize, cn, formatId} from '@/lib/utils';
 import {GENDER, ROLE} from '@/modules/auth/auth.enum';
 import {IPatient} from '@/modules/patient/patient.interface';
@@ -105,6 +106,7 @@ const patients: IPatient[] = [
 
 function PatientsPage() {
     const [state, dispatch] = useReducer(reducer, {type: ActionKind.NONE});
+    const {onLogout} = useAuthContext();
 
     const columns: ColumnDef<IPatient>[] = [
         {
@@ -180,6 +182,7 @@ function PatientsPage() {
     return (
         <div className='space-y-7 p-7'>
             <h1>Patients Management</h1>
+            <Button onClick={onLogout}>Logout</Button>
             <div className='bg-white'>
                 <DataTable data={patients} columns={columns} />
             </div>

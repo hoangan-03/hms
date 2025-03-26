@@ -1,13 +1,11 @@
 import {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
-import {useEffect, useState} from 'react';
-import {Outlet, useLocation, useNavigate} from 'react-router-dom';
+import {createContext, useContext, useEffect, useState} from 'react';
+import {Outlet} from 'react-router-dom';
 import {toast} from 'react-toastify';
 
 // import {ACCESS_TOKEN_EXPIRES_IN_MINUTES} from '@/constants/common';
 // import {timeZoneOptions} from '@/constants/dateTime';
 // import {IAuthToken} from '@/modules/auth/auth.interface';
-import {ENUM_ROUTES} from '@/routes/routes.enum';
-
 import {axiosInstance} from './axios';
 
 // const isRefreshing = false;
@@ -28,12 +26,29 @@ const showToastError = (error: string, toastId: string) => {
     }
 };
 
-function AxiosInterceptor() {
-    const [hasIntercepted, setHasIntercepted] = useState<boolean>(false);
-    const navigate = useNavigate();
+type Context = {
+    state: {
+        isUnauthorized: boolean;
+    };
+    resetState: () => void;
+};
 
-    const {pathname, search} = useLocation();
-    const redirectUrl = search ? pathname + search : pathname;
+const AxiosInterceptorContext = createContext<Context>({
+    state: {isUnauthorized: false},
+    resetState: () => {},
+});
+
+function AxiosInterceptor() {
+    // const [isUnauthorized] = useState<boolean>(false);
+    const [isUnauthorized, setIsUnauthorized] = useState<boolean>(false);
+    // const navigate = useNavigate();
+
+    // const {pathname, search} = useLocation();
+    // const redirectUrl = search ? pathname + search : pathname;
+
+    // console.log('AxiosInterceptor pathname', pathname);
+    // console.log('AxiosInterceptor search', search);
+    // console.log('AxiosInterceptor redirectUrl', redirectUrl);
 
     // const refreshToken = useCallback(async (token: IAuthToken & {rememberMe: boolean}) => {
     //     const expirationDate =
@@ -92,11 +107,9 @@ function AxiosInterceptor() {
                             //         new Promise<string>((resolve) => {
                             //             addRefreshSubscriber(resolve);
                             //         });
-
                             //         if (!isRefreshing) {
                             //             try {
                             //                 isRefreshing = true;
-
                             //                 // Get new token
                             //                 // const tokenString = localStorage.getItem('token') || '';
                             //                 const token: IAuthToken & {rememberMe: boolean} = JSON.parse(tokenString);
@@ -105,7 +118,6 @@ function AxiosInterceptor() {
                             //                     throw error;
                             //                 }
                             //                 const newToken = await refreshToken(token);
-
                             //                 // Call API callback with new token
                             //                 onRefreshTokenComplete(newToken.accessToken);
                             //             } catch (error) {
@@ -122,8 +134,11 @@ function AxiosInterceptor() {
                             //     let navigateTo = ENUM_ROUTES.LOGIN as string;
                             //     navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`));
                             // }
-                            let navigateTo = ENUM_ROUTES.LOGIN as string;
-                            navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`));
+                            // let navigateTo = ENUM_ROUTES.LOGIN as string;
+                            // navigate((navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`), {
+                            //     replace: true,
+                            // });
+                            setIsUnauthorized(true);
                         }
                         break;
                     case 403:
@@ -163,15 +178,24 @@ function AxiosInterceptor() {
         );
 
         // useEffect runs asynchronously with children --> may not finished setting interceptor before rendering children
-        setHasIntercepted(true);
+        // setHasIntercepted(true);
 
         return () => {
             axiosInstance.interceptors.request.eject(requestInterceptor);
             axiosInstance.interceptors.response.eject(responseInterceptor);
         };
-    }, [navigate, redirectUrl]);
+    }, []);
 
-    return hasIntercepted && <Outlet />;
+    const resetState = () => {
+        setIsUnauthorized(false);
+    };
+
+    return (
+        <AxiosInterceptorContext.Provider value={{state: {isUnauthorized}, resetState}}>
+            {<Outlet />}
+        </AxiosInterceptorContext.Provider>
+    );
 }
 
 export default AxiosInterceptor;
+export const useAxiosInterceptorContext = () => useContext(AxiosInterceptorContext);

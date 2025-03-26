@@ -1,45 +1,85 @@
-import {createContext, ReactNode, useContext, useEffect, useState} from 'react';
+import {createContext, ReactNode, useContext, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {toast} from 'react-toastify';
 
-import {IProfile} from '@/modules/auth/auth.interface';
+import {useAxiosInterceptorContext} from '@/lib/axios/AxiosInterceptor';
+import {ILoginRequest, IProfile} from '@/modules/auth/auth.interface';
+import {AuthService} from '@/modules/auth/auth.service';
 import {useGetProfile} from '@/modules/auth/auth.swr';
-
-// import {useProfileSwr} from '@/modules/auth/auth.swr';
-// import {Authentication} from '@/modules/auth/auth.type';
-// import {IAdmin} from '@/modules/user/user.interface';
+import {ENUM_ROUTES} from '@/routes/routes.enum';
 
 type Authentication = {
-    user: IProfile | null;
-    didClickLogout: boolean;
-    mutateUser: () => void;
-    setIsAuth: (value: boolean) => void;
+    state: {
+        isAuth: boolean;
+        user: IProfile | null;
+        didClickLogout: boolean;
+        isLoading: boolean;
+    };
+    onLogin: (data: ILoginRequest) => void;
+    onLogout: () => void;
     setDidClickLogout: (value: boolean) => void;
 };
 
 const initialState: Authentication = {
-    user: null,
-    didClickLogout: false,
-    mutateUser: () => {},
-    setIsAuth: () => {},
+    state: {
+        isAuth: false,
+        user: null,
+        didClickLogout: false,
+        isLoading: false,
+    },
+    onLogin: () => {},
+    onLogout: () => {},
     setDidClickLogout: () => {},
 };
 
 const AuthContext = createContext<Authentication>(initialState);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
-    const token = localStorage.getItem('token');
-    const [isAuth, setIsAuth] = useState<boolean>(!!token);
-    const {data, mutate: mutateUser, error} = useGetProfile(isAuth);
+    const {data, mutate: mutateUser, error, isLoading} = useGetProfile();
+    const {
+        state: {isUnauthorized},
+        resetState,
+    } = useAxiosInterceptorContext();
+    const isAuth = !isLoading && !!data?.id && !error && !isUnauthorized;
     const [didClickLogout, setDidClickLogout] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (isAuth && error && !token) {
-            setIsAuth(false);
+    const navigate = useNavigate();
+
+    const onLogin = async (data: ILoginRequest) => {
+        try {
+            await AuthService.login(data);
+            await mutateUser();
+            resetState();
+            navigate(ENUM_ROUTES.HOME, {replace: true});
+            toast.success('Login successful');
+        } catch (error) {
+            console.error(error);
+            toast.error('Login failed');
+        } finally {
+            setDidClickLogout(false);
         }
-    }, [isAuth, error, token]);
+    };
+
+    const onLogout = async () => {
+        try {
+            await AuthService.logout();
+            await mutateUser();
+            navigate(ENUM_ROUTES.LOGIN, {replace: true});
+            toast.success('Logout successful');
+        } catch (error) {
+            console.error(error);
+            toast.error('Logout failed');
+        }
+    };
 
     return (
         <AuthContext.Provider
-            value={{user: data?.data as IProfile, didClickLogout, mutateUser, setIsAuth, setDidClickLogout}}
+            value={{
+                state: {user: data as IProfile, isAuth, didClickLogout, isLoading},
+                onLogin,
+                onLogout,
+                setDidClickLogout,
+            }}
         >
             {children}
         </AuthContext.Provider>

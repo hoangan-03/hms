@@ -1,19 +1,19 @@
 import {createBrowserRouter, Outlet} from 'react-router-dom';
 
 import {ErrorElement} from '@/components/common';
-// import {AuthProvider} from '@/context/AuthProvider';
+import {AuthProvider} from '@/context/AuthProvider';
 import * as Layout from '@/layouts';
 import AxiosInterceptor from '@/lib/axios/AxiosInterceptor';
 import * as Page from '@/pages';
 
-// import AuthRoute from './AuthRoute';
-// import ProtectedRoute from './ProtectedRoute';
+import AuthRoute from './AuthRoute';
+import ProtectedRoute from './ProtectedRoute';
 import {ENUM_ROUTES} from './routes.enum';
 
 const Root = () => (
-    // <AuthProvider>
-    <Outlet />
-    // </AuthProvider>
+    <AuthProvider>
+        <Outlet />
+    </AuthProvider>
 );
 
 const protectedRoutes = [
@@ -43,7 +43,7 @@ const router = createBrowserRouter([
                 element: <Root />,
                 children: [
                     {
-                        // element: <ProtectedRoute />,
+                        element: <ProtectedRoute />,
                         children: [
                             {
                                 element: <Layout.MainLayout />,
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
                         ],
                     },
                     {
-                        // element: <AuthRoute />,
+                        element: <AuthRoute />,
                         children: [
                             {
                                 element: <Layout.AuthLayout />,

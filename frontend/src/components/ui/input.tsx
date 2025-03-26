@@ -3,14 +3,26 @@ import {ReactNode} from 'react';
 
 import {cn} from '@/lib/utils';
 
+import {Button} from '.';
+
 interface InputProps extends React.ComponentProps<'input'> {
     prefixIcon?: ReactNode;
     suffixIcon?: ReactNode;
     errorMessage?: string;
     errorClassName?: string;
+    onChangePasswordVisibility?: () => void;
 }
 
-function Input({prefixIcon, suffixIcon, className, type, errorClassName, errorMessage, ...props}: InputProps) {
+function Input({
+    prefixIcon,
+    suffixIcon,
+    className,
+    type,
+    errorClassName,
+    errorMessage,
+    onChangePasswordVisibility,
+    ...props
+}: InputProps) {
     return (
         <>
             <div className='relative w-full'>
@@ -27,9 +39,19 @@ function Input({prefixIcon, suffixIcon, className, type, errorClassName, errorMe
                     )}
                     {...props}
                 />
-                {suffixIcon && (
-                    <span className='absolute top-1/2 right-3 -translate-y-1/2 transform'>{suffixIcon}</span>
-                )}
+                {suffixIcon &&
+                    (onChangePasswordVisibility ? (
+                        <Button
+                            size='icon'
+                            variant='none'
+                            className='absolute top-1/2 right-3 -translate-y-1/2 transform'
+                            onClick={onChangePasswordVisibility}
+                        >
+                            {suffixIcon}
+                        </Button>
+                    ) : (
+                        <span className='absolute top-1/2 right-3 -translate-y-1/2 transform'>{suffixIcon}</span>
+                    ))}
             </div>
             <p className={cn('text-error mt-2', errorClassName)}>{errorMessage}</p>
         </>

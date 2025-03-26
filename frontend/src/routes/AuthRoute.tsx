@@ -7,18 +7,21 @@ import {ENUM_ROUTES} from './routes.enum';
 
 const AuthRoute = () => {
     const navigate = useNavigate();
-    const {user, setIsAuth} = useAuthContext();
-    // In case when useSwr is undefined upon first render.
-    const token = localStorage.getItem('token');
+    const {
+        state: {isAuth},
+    } = useAuthContext();
+
+    // const [searchParams] = useSearchParams();
+    // const redirectUrl = searchParams.get('redirectUrl') || '';
 
     useEffect(() => {
-        if (user && token) {
-            setIsAuth(true);
+        if (isAuth) {
             navigate(ENUM_ROUTES.HOME);
         }
-    }, [user, token, navigate, setIsAuth]);
+    }, [navigate, isAuth]);
 
     return <Outlet />;
+    // return isAuth ? <Navigate to={redirectUrl ? redirectUrl : '/'} replace /> : <Outlet />;
 };
 
 export default AuthRoute;

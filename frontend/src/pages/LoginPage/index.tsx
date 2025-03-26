@@ -1,22 +1,22 @@
-import {useForm} from 'react-hook-form';
+import {useState} from 'react';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import {Link} from 'react-router-dom';
-import {toast} from 'react-toastify';
 
 import {Icon} from '@/components/common';
-import {Button, Input, Label, Separator} from '@/components/ui';
+import {Button, Checkbox, Input, Label} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
 import {ILoginRequest} from '@/modules/auth/auth.interface';
-import {AuthService} from '@/modules/auth/auth.service';
 import {signInResolver} from '@/modules/auth/auth.validate';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
 
 type FormValues = ILoginRequest;
 
 function LoginPage() {
+    const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+    const {onLogin} = useAuthContext();
     const {
         register,
         handleSubmit,
-        control,
         formState: {errors, isSubmitting, isDirty},
     } = useForm<FormValues>({
         resolver: signInResolver,
@@ -25,18 +25,9 @@ function LoginPage() {
             password: '',
         },
     });
-    const {setIsAuth, setDidClickLogout} = useAuthContext();
 
-    const onSubmit = async () => {
-        try {
-            const response = await AuthService.login(payload);
-            setIsAuth(true);
-            setDidClickLogout(false);
-            toast.success('Login successfully!');
-        } catch (error) {
-            console.error(error);
-            toast.error('Login failed!');
-        }
+    const onSubmit: SubmitHandler<FormValues> = (data) => {
+        onLogin(data);
     };
 
     return (
@@ -59,30 +50,58 @@ function LoginPage() {
                         <div className='space-y-7'>
                             <div className='space-y-4'>
                                 <Label className='text-718096 text-base'>Username</Label>
-                                <Input autoComplete='username' placeholder='myusername' />
+                                <Input
+                                    autoComplete='username'
+                                    placeholder='myusername'
+                                    {...register('username')}
+                                    errorMessage={errors.username?.message}
+                                />
                             </div>
                             <div className='space-y-4'>
                                 <Label className='text-718096 text-base'>Password</Label>
-                                <Input placeholder='@#*%' suffixIcon={<Icon name='hide-password' />} />
+                                <Input
+                                    type={isPasswordVisible ? 'text' : 'password'}
+                                    autoComplete='current-password'
+                                    placeholder='@#*%'
+                                    suffixIcon={
+                                        isPasswordVisible ? (
+                                            <Icon name='show-password' />
+                                        ) : (
+                                            <Icon name='hide-password' />
+                                        )
+                                    }
+                                    {...register('password')}
+                                    onChangePasswordVisibility={() => setIsPasswordVisible(!isPasswordVisible)}
+                                    errorMessage={errors.password?.message}
+                                />
                             </div>
                         </div>
                         <div className='flex justify-between'>
-                            <p className='text-base'>Remember me</p>
-                            <Link to={'/'}>
+                            <div className='flex items-center gap-2'>
+                                <Checkbox />
+                                <p className='text-base'>Remember me</p>
+                            </div>
+                            {/* <Link to={'/'}>
                                 <p className='text-primary text-base underline hover:brightness-110'>
                                     Forgot Password?
                                 </p>
-                            </Link>
+                            </Link> */}
                         </div>
-                        <Button size='md' className='h-[60px] w-full rounded-[20px]'>
+                        <Button
+                            size='md'
+                            className='h-[60px] w-full rounded-[20px]'
+                            disabled={!isDirty || isSubmitting}
+                            isLoading={isSubmitting}
+                            type='submit'
+                        >
                             Sign in
                         </Button>
                     </form>
-                    <div className='space-y-6'>
+                    {/* <div className='space-y-6'>
                         <Separator />
                         <p>Google</p>
                         <p>Facebook</p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             <div className='from-primary to-primary-light col-span-6 flex flex-col items-center justify-center space-y-9 bg-gradient-to-b'>

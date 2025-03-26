@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useAuthContext} from '@/context/AuthProvider';
 
 import DoctorPage from './DoctorPage';
 import PatientPage from './PatientPage';
@@ -9,7 +9,8 @@ enum ROLE {
 }
 
 function HomePage() {
-    const [role, setRole] = useState<ROLE>(ROLE.PATIENT);
+    const {state} = useAuthContext();
+    const role = state.user?.role;
 
     return role === ROLE.DOCTOR ? <DoctorPage /> : <PatientPage />;
 }
