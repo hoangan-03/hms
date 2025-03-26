@@ -21,7 +21,7 @@ export class AuthService extends APIBaseService {
     }
 
     public static async profile() {
-        return await axiosInstance.get<IProfile>(AuthService.ROUTES.ME);
+        return await axiosInstance.get<IProfile>(AuthService.ROUTES.ME).then((res) => res.data);
     }
 
     public static async logout() {

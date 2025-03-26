@@ -1,7 +1,7 @@
 import {useAuthContext} from '@/context/AuthProvider';
 
-import DoctorPage from './DoctorPage';
-import PatientPage from './PatientPage';
+import DoctorHomePage from './DoctorHomePage';
+import PatientHomePage from './PatientHomePage';
 
 enum ROLE {
     DOCTOR = 'doctor',
@@ -12,7 +12,7 @@ function HomePage() {
     const {state} = useAuthContext();
     const role = state.user?.role;
 
-    return role === ROLE.DOCTOR ? <DoctorPage /> : <PatientPage />;
+    return role === ROLE.DOCTOR ? <DoctorHomePage /> : <PatientHomePage />;
 }
 
 export default HomePage;

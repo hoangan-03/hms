@@ -30,15 +30,35 @@ export function formatId(id: number, idLength: number = 6) {
     return id.toString().padStart(idLength, '0');
 }
 
-export function formatDate(date: Date) {
+type DateKind = 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY';
+
+interface FormatDateOptions {
+    dateKind?: DateKind;
+    dateDelimiter?: string;
+}
+
+export function formatDate(date: Date, options?: FormatDateOptions) {
+    const defaultOptions: FormatDateOptions = {
+        dateKind: 'DD-MM-YYYY',
+        dateDelimiter: '/',
+    };
+    const mergedOptions = options ? {...defaultOptions, ...options} : defaultOptions;
+
     const formatter = new Intl.DateTimeFormat('en-US', timeZoneOptions);
 
     const formatted = formatter.format(date);
     const [month, day, yearTime] = formatted.split('/');
     const [year, time] = yearTime.split(', ');
 
+    let formattedDay = `${day}${mergedOptions.dateDelimiter}${month}${mergedOptions.dateDelimiter}${year}`;
+    if (mergedOptions.dateKind === 'YYYY-MM-DD') {
+        formattedDay = `${year}${mergedOptions.dateDelimiter}${month}${mergedOptions.dateDelimiter}${day}`;
+    } else if (mergedOptions.dateKind === 'MM-DD-YYYY') {
+        formattedDay = `${month}${mergedOptions.dateDelimiter}${day}${mergedOptions.dateDelimiter}${year}`;
+    }
+
     return {
-        day: `${day}/${month}/${year}`,
+        day: formattedDay,
         time,
     };
 }

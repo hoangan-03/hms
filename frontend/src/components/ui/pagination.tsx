@@ -1,8 +1,10 @@
-import {ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon} from 'lucide-react';
+import {MoreHorizontalIcon} from 'lucide-react';
 import * as React from 'react';
 
 import {Button, buttonVariants} from '@/components/ui/button';
 import {cn} from '@/lib/utils';
+
+import {Icon} from '../common';
 
 function Pagination({className, ...props}: React.ComponentProps<'nav'>) {
     return (
@@ -48,8 +50,8 @@ function PaginationLink({className, isActive, isDisabled, ...props}: PaginationL
                     size: 'none',
                 }),
                 'h-8 w-8 rounded-sm hover:opacity-60',
-                isActive ? 'bg-primary text-white' : 'bg-primary text-primary-light',
-                isDisabled ? 'pointer-events-none opacity-50' : '',
+                isActive ? 'bg-secondary text-primary' : 'bg-secondary/30 text-primary',
+                isDisabled ? 'pointer-events-none cursor-not-allowed opacity-50' : '',
                 className
             )}
             {...props}
@@ -61,17 +63,16 @@ function PaginationPrevious({isDisabled = false, className, ...props}: React.Com
     return (
         <PaginationLink
             aria-label='Go to previous page'
-            size='primary'
+            size='none'
             className={cn(
-                'bg-primary text-primary-light h-8 w-8 rounded-sm hover:opacity-60',
+                'bg-primary-light text-primary h-8 w-8 rounded-sm hover:opacity-60',
                 buttonVariants({variant: 'none', size: 'none'}),
                 className
             )}
             isDisabled={isDisabled}
             {...props}
         >
-            <ChevronLeftIcon />
-            <span className='hidden sm:block'>Previous</span>
+            <Icon name='caret-left' width={20} height={20} className='text-primary' />
         </PaginationLink>
     );
 }
@@ -82,28 +83,21 @@ function PaginationNext({isDisabled = false, className, ...props}: React.Compone
             aria-label='Go to next page'
             size='primary'
             className={cn(
-                'bg-primary text-primary-light h-8 w-8 rounded-sm hover:opacity-60',
+                'bg-primary-light text-primary h-8 w-8 rounded-sm hover:opacity-60',
                 buttonVariants({variant: 'none', size: 'none'}),
                 className
             )}
             isDisabled={isDisabled}
             {...props}
         >
-            <span className='hidden sm:block'>Next</span>
-            <ChevronRightIcon />
+            <Icon name='caret-left' width={20} height={20} className='text-primary rotate-180' />
         </PaginationLink>
     );
 }
 
 function PaginationEllipsis({className, ...props}: React.ComponentProps<'span'>) {
     return (
-        <span
-            aria-hidden
-            data-slot='pagination-ellipsis'
-            // className={cn('flex size-9 items-center justify-center', className)}
-            className={className}
-            {...props}
-        >
+        <span aria-hidden data-slot='pagination-ellipsis' className={className} {...props}>
             <MoreHorizontalIcon className='size-4' />
             <span className='sr-only'>More pages</span>
         </span>

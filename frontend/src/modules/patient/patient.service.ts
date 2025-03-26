@@ -13,22 +13,24 @@ export class PatientService extends APIBaseService {
     };
 
     public static async getPatients() {
-        return await axiosInstance.get<IPatient[]>(PatientService.ROUTES.PATIENTS);
+        return await axiosInstance.get<IPatient[]>(PatientService.ROUTES.PATIENTS).then((res) => res.data);
     }
 
     public static async getPatientById(id: number) {
-        return await axiosInstance.get<IPatient>(PatientService.ROUTES.PATIENTS_BY_ID(id));
+        return await axiosInstance.get<IPatient>(PatientService.ROUTES.PATIENTS_BY_ID(id)).then((res) => res.data);
     }
 
     public static async getInsurance() {
-        return await axiosInstance.get<IPatientInsurance>(PatientService.ROUTES.INSURANCE);
+        return await axiosInstance.get<IPatientInsurance>(PatientService.ROUTES.INSURANCE).then((res) => res.data);
     }
 
     public static async getBillings() {
-        return await axiosInstance.get<IPatientBilling[]>(PatientService.ROUTES.BILLINGS);
+        return await axiosInstance.get<IPatientBilling[]>(PatientService.ROUTES.BILLINGS).then((res) => res.data);
     }
 
     public static async getBillingById(id: number) {
-        return await axiosInstance.get<IPatientBilling>(PatientService.ROUTES.BILLING_BY_ID(id));
+        return await axiosInstance
+            .get<IPatientBilling>(PatientService.ROUTES.BILLING_BY_ID(id))
+            .then((res) => res.data);
     }
 }

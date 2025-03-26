@@ -56,7 +56,7 @@ function DataTable<TData, TValue>({
         <div className={cn('relative', loading && 'pointer-events-none', className)}>
             {loading && (
                 <div className='absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2'>
-                    <Spinner className='border-grey-F0F1F3 border-t-primary' width={80} height={80} />
+                    <Spinner className='border-t-primary border-slate-100' width={80} height={80} />
                 </div>
             )}
             <div>

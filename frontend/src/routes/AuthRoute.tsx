@@ -11,9 +11,6 @@ const AuthRoute = () => {
         state: {isAuth},
     } = useAuthContext();
 
-    // const [searchParams] = useSearchParams();
-    // const redirectUrl = searchParams.get('redirectUrl') || '';
-
     useEffect(() => {
         if (isAuth) {
             navigate(ENUM_ROUTES.HOME);
@@ -21,7 +18,6 @@ const AuthRoute = () => {
     }, [navigate, isAuth]);
 
     return <Outlet />;
-    // return isAuth ? <Navigate to={redirectUrl ? redirectUrl : '/'} replace /> : <Outlet />;
 };
 
 export default AuthRoute;

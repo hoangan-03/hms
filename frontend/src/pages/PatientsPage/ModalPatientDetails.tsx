@@ -42,13 +42,13 @@ function ModalPatientDetails({open, data, onClose}: Props) {
                         </div>
                         <div className='w-1/5 space-y-2'>
                             <Label>Age</Label>
-                            <Input className='py-2' />
+                            <Input disabled className='py-2' value={data?.age} />
                         </div>
                         <div className='w-fit space-y-2'>
                             <Label>Gender</Label>
-                            <Select>
+                            <Select disabled>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={capitalize(genders[0])} />
+                                    <SelectValue placeholder={capitalize(data?.gender || genders[0])} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -64,11 +64,11 @@ function ModalPatientDetails({open, data, onClose}: Props) {
                     </div>
                     <div className='space-y-2'>
                         <Label>Phone Number</Label>
-                        <Input className='py-2' />
+                        <Input className='py-2' disabled value={data?.phoneNumber} />
                     </div>
                     <div className='space-y-2'>
                         <Label>Address</Label>
-                        <Input className='py-2' />
+                        <Input className='py-2' disabled value={data?.address} />
                     </div>
                     <div className='flex justify-center gap-16'>
                         <Button variant='cancel' className='w-20'>

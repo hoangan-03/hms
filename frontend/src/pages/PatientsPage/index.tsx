@@ -1,12 +1,15 @@
 import {ColumnDef} from '@tanstack/react-table';
-import {useReducer} from 'react';
+import {useEffect, useReducer} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 import {DataTable, Icon} from '@/components/common';
 import {Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
 import {capitalize, cn, formatId} from '@/lib/utils';
-import {GENDER, ROLE} from '@/modules/auth/auth.enum';
+import {ROLE} from '@/modules/auth/auth.enum';
 import {IPatient} from '@/modules/patient/patient.interface';
+import {useGetPatients} from '@/modules/patient/patient.swr';
+import {ENUM_ROUTES} from '@/routes/routes.enum';
 
 import ModalPatientDetails from './ModalPatientDetails';
 
@@ -41,72 +44,20 @@ const reducer = (state: State, action: Action): State => {
     }
 };
 
-const patients: IPatient[] = [
-    {
-        id: 1,
-        name: 'Sarah Johnson',
-        username: 'sjohnson',
-        age: 35,
-        gender: GENDER.FEMALE,
-        phoneNumber: '555-123-4567',
-        address: '123 Oak Street, Springfield',
-        role: ROLE.PATIENT,
-        createdAt: '2024-12-10T09:30:00Z',
-        updatedAt: '2025-02-15T14:22:00Z',
-    },
-    {
-        id: 2,
-        name: 'Michael Chen',
-        username: 'mchen',
-        age: 42,
-        gender: GENDER.OTHER,
-        phoneNumber: '555-987-6543',
-        address: '456 Maple Avenue, Riverdale',
-        role: ROLE.PATIENT,
-        createdAt: '2024-11-05T11:15:00Z',
-        updatedAt: '2025-01-20T16:45:00Z',
-    },
-    {
-        id: 3,
-        name: 'Emily Rodriguez',
-        username: 'erodriguez',
-        age: 28,
-        gender: GENDER.FEMALE,
-        phoneNumber: '555-456-7890',
-        address: '789 Pine Road, Lakeside',
-        role: ROLE.PATIENT,
-        createdAt: '2025-01-17T10:00:00Z',
-        updatedAt: '2025-02-28T09:10:00Z',
-    },
-    {
-        id: 4,
-        name: 'James Wilson',
-        username: 'jwilson',
-        age: 56,
-        gender: GENDER.MALE,
-        phoneNumber: '555-222-3333',
-        address: '101 Cedar Lane, Mountainview',
-        role: ROLE.PATIENT,
-        createdAt: '2024-09-30T08:20:00Z',
-        updatedAt: '2025-03-05T13:30:00Z',
-    },
-    {
-        id: 5,
-        name: 'Aisha Patel',
-        username: 'apatel',
-        age: 31,
-        gender: GENDER.FEMALE,
-        phoneNumber: '555-789-0123',
-        address: '234 Birch Boulevard, Westside',
-        role: ROLE.PATIENT,
-        createdAt: '2025-02-01T15:45:00Z',
-        updatedAt: '2025-03-10T11:05:00Z',
-    },
-];
-
 function PatientsPage() {
     const [state, dispatch] = useReducer(reducer, {type: ActionKind.NONE});
-    const {onLogout} = useAuthContext();
+    const {
+        state: {user},
+    } = useAuthContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user?.role !== ROLE.DOCTOR) {
+            navigate(ENUM_ROUTES.HOME, {replace: true});
+        }
+    }, [navigate, user]);
+
+    const {data: patients} = useGetPatients();
 
     const columns: ColumnDef<IPatient>[] = [
         {
@@ -182,7 +133,6 @@ function PatientsPage() {
     return (
         <div className='space-y-7 p-7'>
             <h1>Patients Management</h1>
-            <Button onClick={onLogout}>Logout</Button>
             <div className='bg-white'>
                 <DataTable data={patients} columns={columns} />
             </div>

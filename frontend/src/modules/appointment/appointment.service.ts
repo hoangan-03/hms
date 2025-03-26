@@ -1,6 +1,7 @@
 import {axiosInstance} from '@/lib/axios/axios';
 
 import {PaginationRequest, PaginationResponse} from '../api.interface';
+import {IDoctor} from '../doctor/doctor.interface';
 import {APIBaseService} from '../main.service';
 import {IAppointment, IAvailableDoctorRequest, ICreateAppointment} from './appointment.interface';
 
@@ -12,9 +13,11 @@ export class AppointmentService extends APIBaseService {
     };
 
     public static async getAppointments(pagination?: PaginationRequest) {
-        return await axiosInstance.get<PaginationResponse<IAppointment[]>>(AppointmentService.ROUTES.APPOINTMENTS, {
-            params: pagination,
-        });
+        return await axiosInstance
+            .get<PaginationResponse<IAppointment[]>>(AppointmentService.ROUTES.APPOINTMENTS, {
+                params: pagination,
+            })
+            .then((response) => response.data);
     }
 
     public static async createAppointment(payload: ICreateAppointment) {
@@ -22,8 +25,10 @@ export class AppointmentService extends APIBaseService {
     }
 
     public static async getAvailableDoctors(payload: IAvailableDoctorRequest) {
-        return await axiosInstance.get(AppointmentService.ROUTES.AVAILABLE_DOCTORS, {
-            params: payload,
-        });
+        return await axiosInstance
+            .get<IDoctor[]>(AppointmentService.ROUTES.AVAILABLE_DOCTORS, {
+                params: payload,
+            })
+            .then((response) => response.data);
     }
 }

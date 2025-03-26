@@ -14,7 +14,7 @@ function useGetProfile(shouldFetch: boolean = true) {
         }
     );
 
-    return {data: data?.data, mutate, error, isLoading, isValidating};
+    return {data, mutate, error, isLoading, isValidating};
 }
 
 export {useGetProfile};

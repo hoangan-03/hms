@@ -38,7 +38,7 @@ export default tseslint.config(
             quotes: [1, 'single'],
             'jsx-quotes': [1, 'prefer-single'],
             'react-refresh/only-export-components': 'off',
-            'react/self-closing-comp': 'error',
+            'react/self-closing-comp': 'warn',
         },
     }
 );

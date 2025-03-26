@@ -19,6 +19,7 @@ function DatePicker({currentDate, setCurrentDate, minDate, excludeDates, inline}
             excludeDates={excludeDates?.map((date) => new Date(date))}
             className='cursor-pointer rounded-md border border-slate-300 px-2 py-1 shadow-xs'
             shouldCloseOnSelect={true}
+            dateFormat='MM/dd/yyyy'
             // filterDate={isWeekday}
             // renderCustomHeader={({date, decreaseMonth, increaseMonth, changeMonth, changeYear}) => (
             //     <div className='border-b-grey-E0E2E7 flex w-full justify-between border-b px-4 py-3'>

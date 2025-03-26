@@ -1,66 +1,15 @@
 import {ColumnDef} from '@tanstack/react-table';
-import {useReducer} from 'react';
+import {useReducer, useState} from 'react';
 
-import {DataTable, Icon} from '@/components/common';
-import {Badge, Button} from '@/components/ui';
+import {DataTable, Icon, Pagination} from '@/components/common';
+import {Badge, Button, ScrollArea, Separator} from '@/components/ui';
+import {useAuthContext} from '@/context/AuthProvider';
 import {formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
-import {APPOINTMENT_STATUS, APPOINTMENT_TIME_SLOT} from '@/modules/appointment/appointment.enum';
+import {PaginationRequest} from '@/modules/api.interface';
 import {IAppointment} from '@/modules/appointment/appointment.interface';
+import {useGetAppointments} from '@/modules/appointment/appointment.swr';
 
 import ModalCreateAppointment from './ModalCreateAppointment';
-
-const appointments: IAppointment[] = [
-    {
-        id: 1,
-        date: '2025-04-15',
-        timeSlot: APPOINTMENT_TIME_SLOT.A9_10,
-        reason: 'Annual physical examination',
-        notes: 'Need to fast for 12 hours before appointment',
-        status: APPOINTMENT_STATUS.COMFIRMED,
-        createdAt: '2025-03-20T09:15:00Z',
-        updatedAt: '2025-03-21T14:30:00Z',
-    },
-    {
-        id: 2,
-        date: '2025-04-18',
-        timeSlot: APPOINTMENT_TIME_SLOT.A14_15,
-        reason: 'Persistent headache consultation',
-        notes: 'Experiencing headaches for the past two weeks',
-        status: APPOINTMENT_STATUS.PENDING,
-        createdAt: '2025-03-22T11:20:00Z',
-        updatedAt: '2025-03-22T11:20:00Z',
-    },
-    {
-        id: 3,
-        date: '2025-04-10',
-        timeSlot: APPOINTMENT_TIME_SLOT.A16_17,
-        reason: 'Follow-up after surgery',
-        notes: 'Post-operative check for appendectomy performed on 2025-03-01',
-        status: APPOINTMENT_STATUS.COMFIRMED,
-        createdAt: '2025-03-15T16:45:00Z',
-        updatedAt: '2025-03-16T10:00:00Z',
-    },
-    {
-        id: 4,
-        date: '2025-04-05',
-        timeSlot: APPOINTMENT_TIME_SLOT.A11_12,
-        reason: 'Vaccination',
-        notes: 'COVID-19 booster shot',
-        status: APPOINTMENT_STATUS.CANCELLED,
-        createdAt: '2025-03-01T08:30:00Z',
-        updatedAt: '2025-03-04T15:15:00Z',
-    },
-    {
-        id: 5,
-        date: '2025-04-22',
-        timeSlot: APPOINTMENT_TIME_SLOT.A13_14,
-        reason: 'Dermatology consultation',
-        notes: 'Skin rash on arms and neck',
-        status: APPOINTMENT_STATUS.PENDING,
-        createdAt: '2025-03-23T13:10:00Z',
-        updatedAt: '2025-03-23T13:10:00Z',
-    },
-];
 
 enum ActionKind {
     MODAL_CREATE_APPOINTMENT_SHOW = 'MODAL_CREATE_APPOINTMENT_SHOW',
@@ -90,8 +39,20 @@ const reducer = (state: State, action: Action): State => {
     }
 };
 
-function PatientPage() {
+function PatientHomePage() {
     const [state, dispatch] = useReducer(reducer, {type: ActionKind.NONE});
+    const {
+        state: {user},
+    } = useAuthContext();
+
+    const [pagination, setPagination] = useState<PaginationRequest>({
+        page: 1,
+        perPage: 10,
+    });
+
+    const {data, mutate} = useGetAppointments(pagination);
+    const appointments = data?.data || [];
+    const paginationData = data?.pagination;
 
     const columns: ColumnDef<IAppointment>[] = [
         {
@@ -113,7 +74,9 @@ function PatientPage() {
         {
             accessorKey: 'reason',
             header: () => <div className='font-bold'>Reason</div>,
-            cell: ({row}) => <div className='max-w-40 truncate'>{row.original.reason}</div>,
+            cell: ({row}) => (
+                <div className='max-w-40 truncate'>{row.original.reason ? row.original.reason : '<empty>'}</div>
+            ),
         },
         {
             accessorKey: 'status',
@@ -140,7 +103,9 @@ function PatientPage() {
         <div className='space-y-7 p-7'>
             <div className='space-y-1'>
                 <h1>Appointments Management</h1>
-                <p>Welcome Moni Roy</p>
+                <p>
+                    Welcome, <span className='font-bold'>{user?.name}</span>
+                </p>
             </div>
             <div className='flex justify-center'>
                 <Button
@@ -151,16 +116,29 @@ function PatientPage() {
                     Create Appointment
                 </Button>
             </div>
-            <div className='bg-white'>
-                <DataTable data={appointments} columns={columns} />
+            <div className='rounded-md bg-white'>
+                <ScrollArea className='h-[60vh] py-1'>
+                    <DataTable data={appointments} columns={columns} />
+                    <Separator className='bg-black' />
+                    {appointments && paginationData && paginationData.totalItems > 0 && (
+                        <Pagination
+                            currentPage={pagination.page!}
+                            perPage={pagination.perPage!}
+                            totalItems={paginationData.totalItems}
+                            onGoToPage={(page: number) => setPagination({...pagination, page})}
+                            className='rounded-b-md px-4 pt-4 pb-2'
+                        />
+                    )}
+                </ScrollArea>
             </div>
             <ModalCreateAppointment
                 open={state.type === ActionKind.MODAL_CREATE_APPOINTMENT_SHOW}
                 onClose={() => dispatch({type: ActionKind.NONE})}
                 autoFocus={false}
+                onSuccessfulSubmit={() => mutate()}
             />
         </div>
     );
 }
 
-export default PatientPage;
+export default PatientHomePage;
