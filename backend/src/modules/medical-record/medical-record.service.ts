@@ -17,6 +17,51 @@ export class MedicalRecordService {
     private readonly medicalRecordRepository: Repository<MedicalRecord>,
     private readonly patientService: PatientService
   ) {}
+  async getAllMedicalRecords(
+    { page = 1, perPage = 10 }: PaginationParams = {},
+    { dateFrom, dateTo }: DateRangeFilter = {},
+    orderDirection: "ASC" | "DESC" = "DESC"
+  ): Promise<PaginatedMedicalRecordResponse> {
+    const queryBuilder = this.medicalRecordRepository
+      .createQueryBuilder("record")
+      .leftJoinAndSelect("record.doctor", "doctor")
+      .leftJoinAndSelect("record.patient", "patient")
+      .leftJoinAndSelect("record.prescriptions", "prescription");
+
+    if (dateFrom) {
+      queryBuilder.andWhere("record.recordDate > :dateFrom", {
+        dateFrom: formatStartDate(dateFrom),
+      });
+    }
+    if (dateTo) {
+      const nextDay = new Date(dateTo);
+      nextDay.setDate(nextDay.getDate() + 2);
+
+      queryBuilder.andWhere("record.recordDate < :dateTo", {
+        dateTo: formatStartDate(nextDay),
+      });
+    }
+
+    queryBuilder.orderBy("record.recordDate", orderDirection);
+
+    const totalItems = await queryBuilder.getCount();
+
+    const skip = (page - 1) * perPage;
+    queryBuilder.skip(skip).take(perPage);
+
+    const records = await queryBuilder.getMany();
+
+    return {
+      data: records,
+      pagination: {
+        totalItems,
+        page,
+        perPage,
+        totalPages: Math.ceil(totalItems / perPage),
+      },
+    };
+  }
+
   async getMedicalRecords(
     patientId: number,
     { page = 1, perPage = 10 }: PaginationParams = {},

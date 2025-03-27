@@ -35,6 +35,7 @@ import { PagingQueryDto } from "../../commons/dtos/paging-query.dto";
 import { PaginatedAppointmentResponseDto } from "./dtos/paging-response-appointment.dto";
 import { Doctor } from "@/entities/doctor.entity";
 import { TimeSlot } from "./enums/time-slot.enum";
+import { DoctorResponseDto } from "./dtos/doctor-response.dto";
 
 @ApiTags("appointments")
 @UseGuards(JWTAuthGuard, RolesGuard)
@@ -45,11 +46,15 @@ export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
   @Get()
-  @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Get current patient's appointments" })
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({
+    summary:
+      "Get current patient's/doctor's appointments - Role: Doctor/Patient",
+  })
   @ApiResponse({
     status: 200,
-    description: "Return all appointments for the current user with pagination",
+    description:
+      "Return all appointments for the current patient/doctor with pagination",
     type: PaginatedAppointmentResponseDto,
   })
   @ApiResponse({
@@ -84,7 +89,7 @@ export class AppointmentController {
   @Post()
   @Roles(Role.PATIENT)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new appointment" })
+  @ApiOperation({ summary: "Create a new appointment - Role: Patient" })
   @ApiBody({ type: CreateAppointmentDto })
   @ApiResponse({
     status: 201,
@@ -109,7 +114,8 @@ export class AppointmentController {
   @Get("available-doctors")
   @Roles(Role.PATIENT)
   @ApiOperation({
-    summary: "Get available doctors for a specific date and time slot",
+    summary:
+      "Get available doctors for a specific date and time slot - Role: Patient",
   })
   @ApiQuery({
     name: "date",
@@ -132,7 +138,7 @@ export class AppointmentController {
   @ApiResponse({
     status: 200,
     description: "Returns a list of available doctors",
-    type: [Doctor],
+    type: [DoctorResponseDto],
   })
   async getAvailableDoctors(
     @Query("date") date: string,
@@ -150,7 +156,7 @@ export class AppointmentController {
   @Roles(Role.PATIENT)
   @ApiOperation({
     summary:
-      "Get available time slots for a specific doctor on a specific date",
+      "Get available time slots for a specific doctor on a specific date - Role: Patient",
   })
   @ApiQuery({
     name: "doctorId",
@@ -182,7 +188,8 @@ export class AppointmentController {
   @Get("check-availability")
   @Roles(Role.PATIENT)
   @ApiOperation({
-    summary: "Check if a time slot is available for a specific doctor",
+    summary:
+      "Check if a time slot is available for a specific doctor - Role: Patient",
   })
   @ApiQuery({
     name: "doctorId",
@@ -229,7 +236,7 @@ export class AppointmentController {
 
   @Get(":appointmentId")
   @Roles(Role.PATIENT, Role.DOCTOR)
-  @ApiOperation({ summary: "Get specific appointment" })
+  @ApiOperation({ summary: "Get specific appointment - Role: Doctor/Patient" })
   @ApiResponse({
     status: 200,
     description: "Return specific appointment",
@@ -246,8 +253,8 @@ export class AppointmentController {
   }
 
   @Patch(":appointmentId/cancel")
-  @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Cancel appointment" })
+  @Roles(Role.DOCTOR, Role.PATIENT)
+  @ApiOperation({ summary: "Cancel appointment - Role: Doctor/Patient" })
   @ApiResponse({
     status: 200,
     description: "Appointment canceled successfully",
@@ -273,7 +280,7 @@ export class AppointmentController {
 
   @Patch(":appointmentId/confirm")
   @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Confirm appointment" })
+  @ApiOperation({ summary: "Confirm appointment - Role: Doctor" })
   @ApiResponse({
     status: 200,
     description: "Appointment confirmed successfully",
@@ -295,39 +302,5 @@ export class AppointmentController {
     @Param("appointmentId", ParseIntPipe) appointmentId: number
   ): Promise<Appointment> {
     return this.appointmentService.confirmAppointment(appointmentId);
-  }
-
-  @Get("doctor/:doctorId")
-  @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Get doctor's appointments" })
-  @ApiResponse({
-    status: 200,
-    description:
-      "Return all appointments for the specified doctor with pagination",
-    type: PaginatedAppointmentResponseDto,
-  })
-  async getDoctorAppointments(
-    @CurrentUser("id") doctorId: number,
-    @Query() queryParams: PagingQueryDto
-  ): Promise<PaginatedAppointmentResponse> {
-    const dateFrom = queryParams.dateFrom
-      ? parseDateString(queryParams.dateFrom)
-      : undefined;
-    const dateTo = queryParams.dateTo
-      ? parseDateString(queryParams.dateTo)
-      : undefined;
-
-    return this.appointmentService.getAppointmentOfDoctor(
-      doctorId,
-      {
-        page: queryParams.page,
-        perPage: queryParams.perPage,
-      },
-      {
-        dateFrom,
-        dateTo,
-      },
-      queryParams.orderDirection || "DESC"
-    );
   }
 }

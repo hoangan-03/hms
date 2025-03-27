@@ -38,7 +38,7 @@ export class PatientController {
 
   @Get()
   @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Get all patients" })
+  @ApiOperation({ summary: "Get all patients - Role: Doctor" })
   @ApiResponse({
     status: 200,
     description: "Return all patients",
@@ -51,9 +51,10 @@ export class PatientController {
   async getList(): Promise<Patient[]> {
     return this.patientService.getAll();
   }
-  
+
   @Get(":id")
-  @ApiOperation({ summary: "Get patient by ID" })
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Get patient by ID - Role: Doctor" })
   @ApiResponse({
     status: 200,
     description: "Return patient by ID",
@@ -67,25 +68,11 @@ export class PatientController {
     return this.patientService.getOne({ where: { id } });
   }
 
-  @Get("profile")
-  @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Get current patient's profile" })
-  @ApiResponse({
-    status: 200,
-    description: "Return current patient profile",
-    type: Patient,
-  })
-  @ApiResponse({
-    status: 401,
-    description: "Unauthorized - Invalid or missing token",
-  })
-  async getProfile(@CurrentUser("id") userId: number): Promise<Patient> {
-    return this.patientService.getOne({ where: { id: userId } });
-  }
-
   @Patch("profile")
   @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Update current patient profile" })
+  @ApiOperation({
+    summary: "Update current patient profile - Role: Patient",
+  })
   @ApiBody({ type: UpdatePatientDto })
   @ApiResponse({
     status: 200,
@@ -103,9 +90,37 @@ export class PatientController {
     return this.patientService.updateProfile(patientId, updateData);
   }
 
+  @Patch("profile/doctor-update")
+  @Roles(Role.DOCTOR)
+  @ApiOperation({
+    summary: "Update patient profile by doctor - Role: Doctor",
+  })
+  @ApiBody({ type: UpdatePatientDto })
+  @ApiResponse({
+    status: 200,
+    description: "Return updated patient profile",
+    type: Patient,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid credentials",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden resource - You are not allowed to access this",
+  })
+  async updateProfileByDoctor(
+    @Param("id") patientId: number,
+    @Body() updateData: UpdatePatientDto
+  ): Promise<Patient> {
+    return this.patientService.updateProfile(patientId, updateData);
+  }
+
   @Get("insurance")
   @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Get current patient's insurance information" })
+  @ApiOperation({
+    summary: "Get current patient's insurance information - Role: Patient",
+  })
   @ApiResponse({
     status: 200,
     description: "Return insurance information",
@@ -125,7 +140,9 @@ export class PatientController {
 
   @Get("billing")
   @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Get current patient's billing records" })
+  @ApiOperation({
+    summary: "Get current patient's billing records - Role: Paient",
+  })
   @ApiResponse({
     status: 200,
     description: "Return billing records",
@@ -142,7 +159,10 @@ export class PatientController {
   }
 
   @Get("billing/:billingId")
-  @ApiOperation({ summary: "Get specific billing record for current patient" })
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary: "Get specific billing record for current patient - Role: Patient",
+  })
   @ApiResponse({
     status: 200,
     description: "Return specific billing record",

@@ -1,6 +1,6 @@
 import { Appointment } from "@/entities/appointment.entity";
 
-export interface PaginatedAppointmentResponse{
+export interface PaginatedAppointmentResponse {
   data: Appointment[];
   pagination: {
     page: number;
@@ -9,4 +9,3 @@ export interface PaginatedAppointmentResponse{
     totalPages: number;
   };
 }
-

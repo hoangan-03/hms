@@ -24,7 +24,7 @@ export class PatientService {
     @InjectRepository(Insurance)
     private readonly insuranceRepository: Repository<Insurance>,
     @InjectRepository(Billing)
-    private readonly billingRepository: Repository<Billing>,
+    private readonly billingRepository: Repository<Billing>
   ) {}
 
   // Patient Management
@@ -58,20 +58,20 @@ export class PatientService {
     return this.patientRepository.save(patient);
   }
 
-
-
   // Insurance
   async getInsurance(patientId: number): Promise<Insurance> {
     await this.getOne({ where: { id: patientId } }); // Verify patient exists
-    
+
     const insurance = await this.insuranceRepository.findOne({
-      where: { patient: { id: patientId } }
+      where: { patient: { id: patientId } },
     });
-    
+
     if (!insurance) {
-      throw new NotFoundException(`No insurance found for patient with ID: ${patientId}`);
+      throw new NotFoundException(
+        `No insurance found for patient with ID: ${patientId}`
+      );
     }
-    
+
     return insurance;
   }
 
@@ -89,30 +89,30 @@ export class PatientService {
       where: { id },
       relations: ["patient"],
     });
-    
+
     if (!billing) {
       throw new NotFoundException(`Billing record with ID ${id} not found`);
     }
-    
+
     return billing;
   }
 
   // Prescriptions
   // async getPrescriptions(patientId: number): Promise<Prescription[]> {
   //   await this.getOne({ where: { id: patientId } }); // Verify patient exists
-    
+
   //   const records = await this.medicalRecordRepository.find({
   //     where: { patient: { id: patientId } },
   //     relations: ["prescriptions", "prescriptions.medicalRecord"],
   //   });
-    
+
   //   const prescriptions: Prescription[] = [];
   //   records.forEach(record => {
   //     if (record.prescriptions && record.prescriptions.length) {
   //       prescriptions.push(...record.prescriptions);
   //     }
   //   });
-    
+
   //   return prescriptions;
   // }
 }
