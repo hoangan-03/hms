@@ -15,7 +15,10 @@ export class RegisterUserDto {
   })
   @IsDefined()
   @IsNotEmpty()
-  @Validate(IsUserNameAlreadyExist)   
+  @MinLength(3, {
+    message: "Username must be at least 3 characters long",
+  })
+  @Validate(IsUserNameAlreadyExist)
   readonly username: string;
 
   @ApiProperty({
@@ -24,10 +27,8 @@ export class RegisterUserDto {
   })
   @IsDefined()
   @IsNotEmpty()
-  @MinLength(8)
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])/, {
-    message:
-      "Password must be at least 8 character, contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character",
+  @MinLength(8, {
+    message: "Password must be at least 8 characters long",
   })
   readonly password: string;
 }
