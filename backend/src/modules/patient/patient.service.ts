@@ -11,6 +11,13 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { UpdatePatientDto } from "./dtos/update-patient.dto";
+import { formatStartDate } from "@/utils/parse-date-string";
+import { PaginatedAppointmentResponse } from "../appointment/interface/paging-response-appointment.interface";
+import {
+  PaginationParams,
+  DateRangeFilter,
+} from "../medical-record/interface/paging-response-medical-record.interface";
+import { PaginatedPatientResponseDto } from "./dtos/paginated-patient-response.dto";
 
 @Injectable()
 export class PatientService {
@@ -35,6 +42,28 @@ export class PatientService {
 
   async getAll(): Promise<Patient[]> {
     return this.patientRepository.find();
+  }
+
+  async getPatients(
+    { page = 1, perPage = 10 }: PaginationParams = {},
+  ): Promise<PaginatedPatientResponseDto> {
+    const queryBuilder = this.patientRepository.createQueryBuilder("patient");
+    const totalItems = await queryBuilder.getCount();
+
+    const skip = (page - 1) * perPage;
+    queryBuilder.skip(skip).take(perPage);
+
+    const patients = await queryBuilder.getMany();
+
+    return {
+      data: patients,
+      pagination: {
+        totalItems,
+        page,
+        perPage,
+        totalPages: Math.ceil(totalItems / perPage),
+      },
+    };
   }
 
   async getOne(options: FindOneOptions<Patient>): Promise<Patient> {
