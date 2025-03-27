@@ -21,11 +21,11 @@ export interface IAuthToken {
 
 export interface IProfile {
     id: number;
-    name: string;
+    name: string | null;
     username: string;
-    age: number;
-    gender: GENDER;
-    phoneNumber: string;
-    address: string;
+    age: number | null;
+    gender: GENDER | null;
+    phoneNumber: string | null;
+    address: string | null;
     role: ROLE;
 }

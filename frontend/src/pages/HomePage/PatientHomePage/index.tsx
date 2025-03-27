@@ -4,7 +4,7 @@ import {useReducer, useState} from 'react';
 import {DataTable, Icon, Pagination} from '@/components/common';
 import {Badge, Button, ScrollArea, Separator} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
-import {formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
+import {cn, formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
 import {PaginationRequest} from '@/modules/api.interface';
 import {IAppointment} from '@/modules/appointment/appointment.interface';
 import {useGetAppointments} from '@/modules/appointment/appointment.swr';
@@ -72,6 +72,11 @@ function PatientHomePage() {
             cell: ({row}) => <div>{formatAppointmentTime(row.original.timeSlot)}</div>,
         },
         {
+            accessorKey: 'doctor',
+            header: () => <div className='font-bold'>Doctor</div>,
+            cell: ({row}) => <div>{row.original.doctor.name}</div>,
+        },
+        {
             accessorKey: 'reason',
             header: () => <div className='font-bold'>Reason</div>,
             cell: ({row}) => (
@@ -117,7 +122,7 @@ function PatientHomePage() {
                 </Button>
             </div>
             <div className='rounded-md bg-white'>
-                <ScrollArea className='h-[60vh] py-1'>
+                <ScrollArea className={cn('py-1', appointments.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
                     <DataTable data={appointments} columns={columns} />
                     <Separator className='bg-black' />
                     {appointments && paginationData && paginationData.totalItems > 0 && (

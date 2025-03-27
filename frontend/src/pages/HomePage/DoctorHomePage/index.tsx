@@ -1,10 +1,11 @@
 import {ColumnDef} from '@tanstack/react-table';
-import {useReducer} from 'react';
+import {useReducer, useState} from 'react';
 
-import {DataTable, Icon} from '@/components/common';
-import {Badge, Button} from '@/components/ui';
+import {DataTable, Icon, Pagination} from '@/components/common';
+import {Badge, Button, ScrollArea, Separator} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
-import {formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
+import {cn, formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
+import {PaginationRequest} from '@/modules/api.interface';
 import {IAppointment} from '@/modules/appointment/appointment.interface';
 import {useGetAppointments} from '@/modules/appointment/appointment.swr';
 
@@ -15,23 +16,38 @@ enum ActionKind {
     NONE = 'NONE',
 }
 
-interface Action {
+interface Action<T = undefined> {
     type: ActionKind;
-    appointment?: IAppointment;
+    payload?: T;
 }
+
+type ShowUpdateAppointmentStatusModalPayload = {
+    appointment: IAppointment;
+};
 
 interface State {
     type: ActionKind;
     appointment?: IAppointment;
 }
 
-const reducer = (state: State, action: Action): State => {
+// Action creators
+const actions = {
+    showUpdateAppointmentStatusModal: (appointment: IAppointment): Action<ShowUpdateAppointmentStatusModalPayload> => ({
+        type: ActionKind.MODAL_UPDATE_APPOINTMENT_STATUS_SHOW,
+        payload: {appointment},
+    }),
+    closeModal: (): Action => ({
+        type: ActionKind.NONE,
+    }),
+};
+
+const reducer = (state: State, action: Action<unknown>): State => {
     switch (action.type) {
         case ActionKind.MODAL_UPDATE_APPOINTMENT_STATUS_SHOW:
             return {
                 ...state,
                 type: ActionKind.MODAL_UPDATE_APPOINTMENT_STATUS_SHOW,
-                appointment: action.appointment,
+                appointment: (action.payload as ShowUpdateAppointmentStatusModalPayload).appointment,
             };
         default:
             return {
@@ -47,8 +63,14 @@ function DoctorHomePage() {
         state: {user},
     } = useAuthContext();
 
-    const {data} = useGetAppointments();
+    const [pagination, setPagination] = useState<PaginationRequest>({
+        page: 1,
+        perPage: 10,
+    });
+
+    const {data, mutate} = useGetAppointments(pagination);
     const appointments = data?.data || [];
+    const paginationData = data?.pagination;
 
     const columns: ColumnDef<IAppointment>[] = [
         {
@@ -66,6 +88,11 @@ function DoctorHomePage() {
             accessorKey: 'timeSlot',
             header: () => <div className='font-bold'>Time</div>,
             cell: ({row}) => <div>{formatAppointmentTime(row.original.timeSlot)}</div>,
+        },
+        {
+            accessorKey: 'patient',
+            header: () => <div className='font-bold'>Patient</div>,
+            cell: ({row}) => <div>{row.original.patient.name}</div>,
         },
         {
             accessorKey: 'reason',
@@ -99,9 +126,7 @@ function DoctorHomePage() {
                     <Button
                         size='icon'
                         variant='none'
-                        onClick={() =>
-                            dispatch({type: ActionKind.MODAL_UPDATE_APPOINTMENT_STATUS_SHOW, appointment: row.original})
-                        }
+                        onClick={() => dispatch(actions.showUpdateAppointmentStatusModal(row.original))}
                     >
                         <Icon
                             name='pencil'
@@ -123,12 +148,25 @@ function DoctorHomePage() {
                     It is nice to see you, <span className='font-bold'>{user?.name}</span>
                 </p>
             </div>
-            <div className='bg-white'>
-                <DataTable data={appointments} columns={columns} />
+            <div className='rounded-md bg-white'>
+                <ScrollArea className={cn('py-1', appointments.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
+                    <DataTable data={appointments} columns={columns} />
+                    <Separator className='bg-black' />
+                    {appointments && paginationData && paginationData.totalItems > 0 && (
+                        <Pagination
+                            currentPage={pagination.page!}
+                            perPage={pagination.perPage!}
+                            totalItems={paginationData.totalItems}
+                            onGoToPage={(page: number) => setPagination({...pagination, page})}
+                            className='rounded-b-md px-4 pt-4 pb-2'
+                        />
+                    )}
+                </ScrollArea>
             </div>
             <ModalUpdateAppointmentStatus
                 open={state.type === ActionKind.MODAL_UPDATE_APPOINTMENT_STATUS_SHOW}
-                onClose={() => dispatch({type: ActionKind.NONE})}
+                onClose={() => dispatch(actions.closeModal())}
+                onSucessfulSubmit={() => mutate()}
                 data={state.appointment}
             />
         </div>

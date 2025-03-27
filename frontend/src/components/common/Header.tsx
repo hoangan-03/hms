@@ -52,7 +52,7 @@ function Header() {
                         <AvatarFallback />
                     </Avatar>
                     <div className='space-y-1'>
-                        <p className='text-404040 font-bold'>{user?.name}</p>
+                        <p className='text-404040 font-bold'>{user?.name || 'User'}</p>
                         <p className='text-xs font-semibold'>{capitalize(user?.role || '')}</p>
                     </div>
                     <DropdownMenu>

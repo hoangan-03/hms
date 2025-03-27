@@ -16,7 +16,7 @@ function useGetPatients(pagination?: PaginationRequest, shouldFetch: boolean = t
     );
 
     return {
-        data: data || [],
+        data,
         mutate,
         error,
         isLoading,

@@ -1,12 +1,13 @@
 import {ColumnDef} from '@tanstack/react-table';
-import {useEffect, useReducer} from 'react';
+import {useEffect, useReducer, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {DataTable, Icon} from '@/components/common';
-import {Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui';
+import {DataTable, Icon, Pagination} from '@/components/common';
+import {Button, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
 import {capitalize, cn, formatId} from '@/lib/utils';
-import {ROLE} from '@/modules/auth/auth.enum';
+import {PaginationRequest} from '@/modules/api.interface';
+import {GENDER, ROLE} from '@/modules/auth/auth.enum';
 import {IPatient} from '@/modules/patient/patient.interface';
 import {useGetPatients} from '@/modules/patient/patient.swr';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
@@ -18,9 +19,13 @@ enum ActionKind {
     NONE = 'NONE',
 }
 
-interface Action {
+type ShowPatientDetailsModalPayload = {
+    patient: IPatient;
+};
+
+interface Action<T = undefined> {
     type: ActionKind;
-    patient?: IPatient;
+    payload?: T;
 }
 
 interface State {
@@ -28,13 +33,23 @@ interface State {
     patient?: IPatient;
 }
 
-const reducer = (state: State, action: Action): State => {
+const actions = {
+    showPatientDetailsModal: (patient: IPatient): Action<ShowPatientDetailsModalPayload> => ({
+        type: ActionKind.MODAL_PATIENT_DETAILS_SHOW,
+        payload: {patient},
+    }),
+    closeModal: (): Action => ({
+        type: ActionKind.NONE,
+    }),
+};
+
+const reducer = (state: State, action: Action<unknown>): State => {
     switch (action.type) {
         case ActionKind.MODAL_PATIENT_DETAILS_SHOW:
             return {
                 ...state,
                 type: ActionKind.MODAL_PATIENT_DETAILS_SHOW,
-                patient: action.patient,
+                patient: (action.payload as ShowPatientDetailsModalPayload).patient,
             };
         default:
             return {
@@ -47,17 +62,24 @@ const reducer = (state: State, action: Action): State => {
 function PatientsPage() {
     const [state, dispatch] = useReducer(reducer, {type: ActionKind.NONE});
     const {
-        state: {user},
+        state: {user, isLoading},
     } = useAuthContext();
     const navigate = useNavigate();
 
+    const [pagination, setPagination] = useState<PaginationRequest>({
+        page: 1,
+        perPage: 10,
+    });
+
     useEffect(() => {
-        if (user?.role !== ROLE.DOCTOR) {
+        if (user?.role !== ROLE.DOCTOR && !isLoading) {
             navigate(ENUM_ROUTES.HOME, {replace: true});
         }
-    }, [navigate, user]);
+    }, [navigate, user, isLoading]);
 
-    const {data: patients} = useGetPatients();
+    const {data} = useGetPatients(pagination);
+    const patients = data?.data || [];
+    const paginationData = data?.pagination;
 
     const columns: ColumnDef<IPatient>[] = [
         {
@@ -95,7 +117,7 @@ function PatientsPage() {
                                 />
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>{capitalize(row.original.gender)}</p>
+                                <p>{capitalize(row.original.gender || GENDER.OTHER)}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
@@ -121,7 +143,7 @@ function PatientsPage() {
                     <Button
                         size='icon'
                         variant='none'
-                        onClick={() => dispatch({type: ActionKind.MODAL_PATIENT_DETAILS_SHOW, patient: row.original})}
+                        onClick={() => dispatch(actions.showPatientDetailsModal(row.original))}
                     >
                         <Icon name='person' width={20} height={20} />
                     </Button>
@@ -133,12 +155,24 @@ function PatientsPage() {
     return (
         <div className='space-y-7 p-7'>
             <h1>Patients Management</h1>
-            <div className='bg-white'>
-                <DataTable data={patients} columns={columns} />
+            <div className='rounded-md bg-white'>
+                <ScrollArea className={cn('py-1', patients.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
+                    <DataTable data={patients} columns={columns} />
+                    <Separator className='bg-black' />
+                    {patients && paginationData && paginationData.totalItems > 0 && (
+                        <Pagination
+                            currentPage={pagination.page!}
+                            perPage={pagination.perPage!}
+                            totalItems={paginationData.totalItems}
+                            onGoToPage={(page: number) => setPagination({...pagination, page})}
+                            className='rounded-b-md px-4 pt-4 pb-2'
+                        />
+                    )}
+                </ScrollArea>
             </div>
             <ModalPatientDetails
                 open={state.type === ActionKind.MODAL_PATIENT_DETAILS_SHOW}
-                onClose={() => dispatch({type: ActionKind.NONE})}
+                onClose={() => dispatch(actions.closeModal())}
                 data={state.patient}
             />
         </div>

@@ -8,14 +8,15 @@ import {ENUM_ROUTES} from './routes.enum';
 const AuthRoute = () => {
     const navigate = useNavigate();
     const {
-        state: {isAuth},
+        state: {isAuth, isLoading},
     } = useAuthContext();
 
     useEffect(() => {
-        if (isAuth) {
+        if (isAuth && !isLoading) {
+            console.log('this runs?');
             navigate(ENUM_ROUTES.HOME);
         }
-    }, [navigate, isAuth]);
+    }, [navigate, isAuth, isLoading]);
 
     return <Outlet />;
 };

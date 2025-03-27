@@ -10,6 +10,8 @@ export class AppointmentService extends APIBaseService {
         APPOINTMENTS: APIBaseService.BASE_URL + '/appointments',
         APPOINTMENTS_BY_ID: (id: number) => APIBaseService.BASE_URL + `/appointments/${id}`,
         AVAILABLE_DOCTORS: APIBaseService.BASE_URL + '/appointments/available-doctors',
+        CANCEL: (id: number) => APIBaseService.BASE_URL + `/appointments/${id}/cancel`,
+        CONFIRM: (id: number) => APIBaseService.BASE_URL + `/appointments/${id}/confirm`,
     };
 
     public static async getAppointments(pagination?: PaginationRequest) {
@@ -30,5 +32,13 @@ export class AppointmentService extends APIBaseService {
                 params: payload,
             })
             .then((response) => response.data);
+    }
+
+    public static async cancelAppointment(id: number) {
+        return await axiosInstance.patch(AppointmentService.ROUTES.CANCEL(id));
+    }
+
+    public static async confirmAppointment(id: number) {
+        return await axiosInstance.patch(AppointmentService.ROUTES.CONFIRM(id));
     }
 }

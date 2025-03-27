@@ -1,5 +1,6 @@
 import {axiosInstance} from '@/lib/axios/axios';
 
+import {PaginationResponse} from '../api.interface';
 import {APIBaseService} from '../main.service';
 import {IPatient, IPatientBilling, IPatientInsurance} from './patient.interface';
 
@@ -13,7 +14,9 @@ export class PatientService extends APIBaseService {
     };
 
     public static async getPatients() {
-        return await axiosInstance.get<IPatient[]>(PatientService.ROUTES.PATIENTS).then((res) => res.data);
+        return await axiosInstance
+            .get<PaginationResponse<IPatient[]>>(PatientService.ROUTES.PATIENTS)
+            .then((res) => res.data);
     }
 
     public static async getPatientById(id: number) {

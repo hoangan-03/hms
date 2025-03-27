@@ -32,6 +32,10 @@ const authRoutes = [
         path: ENUM_ROUTES.LOGIN,
         element: <Page.LoginPage />,
     },
+    {
+        path: ENUM_ROUTES.REGISTER,
+        element: <Page.RegisterPage />,
+    },
 ];
 
 const router = createBrowserRouter([

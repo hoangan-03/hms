@@ -1,13 +1,17 @@
 import {BaseEntity} from '../common.interface';
+import {IDoctor} from '../doctor/doctor.interface';
+import {IPatient} from '../patient/patient.interface';
 import {APPOINTMENT_STATUS, APPOINTMENT_TIME_SLOT} from './appointment.enum';
 
 export interface IAppointment extends BaseEntity {
     id: number;
     date: string; // 'YYYY-MM-DD'
     timeSlot: APPOINTMENT_TIME_SLOT;
-    reason: string;
+    reason: string | null;
     notes: string;
     status: APPOINTMENT_STATUS;
+    doctor: IDoctor;
+    patient: IPatient;
 }
 
 export interface ICreateAppointment {

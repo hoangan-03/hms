@@ -1,4 +1,5 @@
-import {Navigate, Outlet, useLocation} from 'react-router-dom';
+import {useEffect} from 'react';
+import {Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
 
 import {useAuthContext} from '@/context/AuthProvider';
 
@@ -8,15 +9,20 @@ const ProtectedRoute = () => {
     const {
         state: {isAuth, didClickLogout, isLoading},
     } = useAuthContext();
+    const navigate = useNavigate();
 
     const {pathname, search} = useLocation();
     const redirectUrl = search ? pathname + search : pathname;
 
-    if (isAuth === false && !isLoading) {
-        let navigateTo = ENUM_ROUTES.LOGIN as string;
-        if (!didClickLogout) navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`;
-        return <Navigate to={navigateTo} replace />;
-    }
+    useEffect(() => {
+        if (isAuth === false && !isLoading) {
+            console.log('this runs?');
+            let navigateTo = ENUM_ROUTES.LOGIN as string;
+            if (!didClickLogout) navigateTo += `?redirect-url=${encodeURIComponent(redirectUrl)}`;
+            navigate(navigateTo, {replace: true});
+            // return <Navigate to={navigateTo} replace />;
+        }
+    }, [isAuth, isLoading, navigate, didClickLogout, redirectUrl]);
 
     return <Outlet />;
 };

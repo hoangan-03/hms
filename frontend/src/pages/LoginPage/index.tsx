@@ -6,7 +6,7 @@ import {Icon} from '@/components/common';
 import {Button, Checkbox, Input, Label} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
 import {ILoginRequest} from '@/modules/auth/auth.interface';
-import {signInResolver} from '@/modules/auth/auth.validate';
+import {LoginResolver} from '@/modules/auth/auth.validate';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
 
 type FormValues = ILoginRequest;
@@ -19,7 +19,7 @@ function LoginPage() {
         handleSubmit,
         formState: {errors, isSubmitting, isDirty},
     } = useForm<FormValues>({
-        resolver: signInResolver,
+        resolver: LoginResolver,
         defaultValues: {
             username: '',
             password: '',
