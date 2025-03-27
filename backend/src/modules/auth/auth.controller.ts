@@ -92,6 +92,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: "Returns the current authenticated user",
+    type: Patient,
   })
   @ApiResponse({
     status: 401,

@@ -32,8 +32,11 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.use(cookieParser(sessionSecret));
   app.use(compression());
-  app.enableCors();
-
+  app.enableCors({
+    origin: "http://localhost:5173",
+    allowedHeaders: ["Content-Type", "Authorization", "withCredentials"],
+    credentials: true,
+  });
   app.setGlobalPrefix("api");
 
   app.enableVersioning({

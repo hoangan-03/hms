@@ -37,8 +37,49 @@ export class MedicalRecordController {
   constructor(private readonly medicalRecordService: MedicalRecordService) {}
 
   @Get()
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: "Get all medical records - Role: Doctor" })
+  @ApiResponse({
+    status: 200,
+    description: "Return all medical records",
+    type: PaginatedMedicalRecordResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden resource - You are not allowed to access this",
+  })
+  async getAllMedicalRecords(
+    @Query() queryParams: PagingQueryDto
+  ): Promise<PaginatedMedicalRecordResponse> {
+    const dateFrom = queryParams.dateFrom
+      ? parseDateString(queryParams.dateFrom)
+      : undefined;
+    const dateTo = queryParams.dateTo
+      ? parseDateString(queryParams.dateTo)
+      : undefined;
+
+    return this.medicalRecordService.getAllMedicalRecords(
+      {
+        page: queryParams.page,
+        perPage: queryParams.perPage,
+      },
+      {
+        dateFrom,
+        dateTo,
+      },
+      queryParams.orderDirection || "DESC"
+    );
+  }
+
+  @Get("/patient")
   @Roles(Role.PATIENT)
-  @ApiOperation({ summary: "Get current patient's medical records" })
+  @ApiOperation({
+    summary: "Get current patient's medical records - Role: Patient",
+  })
   @ApiResponse({
     status: 200,
     description:
@@ -76,7 +117,7 @@ export class MedicalRecordController {
 
   @Get(":recordId")
   @Roles(Role.DOCTOR)
-  @ApiOperation({ summary: "Get specific medical record" })
+  @ApiOperation({ summary: "Get specific medical record - Role: Doctor" })
   @ApiResponse({
     status: 200,
     description: "Return specific medical record",
