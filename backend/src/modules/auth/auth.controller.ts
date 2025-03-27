@@ -133,12 +133,12 @@ export class AuthController {
     return this.authService.logout(response);
   }
 
-  // @Get("google")
-  // @UseGuards(GoogleAuthGuard)
-  // @ApiOperation({ summary: "Initiate Google OAuth login" })
-  // googleAuth() {
-  //   // Redirect to Google OAuth
-  // }
+  @Get("google")
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: "Initiate Google OAuth login" })
+  googleAuth() {
+    // Redirect to Google OAuth
+  }
 
   @Get("google/callback")
   @UseGuards(GoogleAuthGuard)
@@ -155,12 +155,12 @@ export class AuthController {
     return this.authService.googleLogin(user, response);
   }
 
-  // @Get("facebook")
-  // @UseGuards(FacebookAuthGuard)
-  // @ApiOperation({ summary: "Initiate Facebook OAuth login" })
-  // facebookAuth() {
-  //   // This will redirect to Facebook OAuth
-  // }
+  @Get("facebook")
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({ summary: "Initiate Facebook OAuth login" })
+  facebookAuth() {
+    // This will redirect to Facebook OAuth
+  }
 
   @Get("facebook/callback")
   @UseGuards(FacebookAuthGuard)

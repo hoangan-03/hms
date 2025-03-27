@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UseGuards,
   NotFoundException,
+  Query,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -27,6 +28,9 @@ import { CurrentUser } from "../auth/decorators/user.decorator";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { Role } from "../auth/enums/role.enum";
+import { PagingQueryDto } from "@/commons/dtos/paging-query.dto";
+import { parseDateString } from "@/utils/parse-date-string";
+import { PaginatedPatientResponseDto } from "./dtos/paginated-patient-response.dto";
 
 @ApiTags("patients")
 @UseGuards(JWTAuthGuard, RolesGuard)
@@ -39,17 +43,25 @@ export class PatientController {
   @Get()
   @Roles(Role.DOCTOR)
   @ApiOperation({ summary: "Get all patients - Role: Doctor" })
+  @ApiOperation({
+    summary: "Get all patient with pagination - Role: Doctor",
+  })
   @ApiResponse({
     status: 200,
-    description: "Return all patients",
-    type: [Patient],
+    description: "Return all patientwith pagination",
+    type: PaginatedPatientResponseDto,
   })
   @ApiResponse({
     status: 401,
     description: "Unauthorized - Invalid or missing token",
   })
-  async getList(): Promise<Patient[]> {
-    return this.patientService.getAll();
+  async getPatients(
+    @Query() queryParams: PagingQueryDto
+  ): Promise<PaginatedPatientResponseDto> {
+    return this.patientService.getPatients({
+      page: queryParams.page,
+      perPage: queryParams.perPage,
+    });
   }
 
   @Get(":id")
