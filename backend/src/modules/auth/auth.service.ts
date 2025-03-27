@@ -37,9 +37,6 @@ export class AuthService {
         ...signUp,
         password: hashedPassword,
       });
-
-      const tokens = this.generateTokens(user);
-      this.setAuthCookies(response, tokens);
       return new RegisterUserResponseDto(user.username);
     } catch (error: any) {
       throw new InternalServerErrorException(
