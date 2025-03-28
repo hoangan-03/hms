@@ -152,7 +152,10 @@ export class AuthController {
     @CurrentUser() user: Patient,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.authService.googleLogin(user, response);
+    const tokens = this.authService.googleLogin(user, response);
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    return response.redirect(`${frontendUrl}/auth/callback?success=true`);
   }
 
   @Get("facebook")
