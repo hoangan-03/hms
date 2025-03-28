@@ -31,7 +31,6 @@ export class AppointmentService {
     private readonly doctorRepository: Repository<Doctor>
   ) {}
 
-  // Get all apointments of a specific patient
   async getAppointments(
     patientId: number,
     { page = 1, perPage = 10 }: PaginationParams = {},
@@ -81,7 +80,6 @@ export class AppointmentService {
     };
   }
 
-  // Get all appointments of a specific doctor
   async getAppointmentOfDoctor(
     doctorId: number,
     { page = 1, perPage = 10 }: PaginationParams = {},
@@ -132,7 +130,6 @@ export class AppointmentService {
     };
   }
 
-  // Get a specific appointment by ID
   async getAppointment(id: number): Promise<Appointment> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id },
@@ -146,7 +143,6 @@ export class AppointmentService {
     return appointment;
   }
 
-  // Get all available doctors for a specific date and time slot
   async getAvailableDoctorsForTimeSlot(
     date: string,
     timeSlot: TimeSlot,
@@ -154,7 +150,6 @@ export class AppointmentService {
   ): Promise<Doctor[]> {
     const appointmentDate = new Date(date);
 
-    // Find all doctors that are already booked for this time slot
     const bookedDoctorIds = await this.appointmentRepository
       .createQueryBuilder("appointment")
       .select("appointment.doctor.id")
@@ -180,7 +175,6 @@ export class AppointmentService {
       });
     }
 
-    // Get the available doctors
     return doctorQueryBuilder.getMany();
   }
 
@@ -322,10 +316,30 @@ export class AppointmentService {
 
   // Reschedule an appointment
   async rescheduleAppointment(
+    patientId: number,
     id: number,
     appointmentDto: CreateAppointmentDto
   ): Promise<Appointment> {
     const appointment = await this.getAppointment(id);
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+    if (appointment.patient.id !== patientId) {
+      throw new BadRequestException(
+        `You are not authorized to reschedule this appointment`
+      );
+    }
+    if (appointment.status === AppointmentStatus.CANCELLED) {
+      throw new BadRequestException(
+        `Cannot reschedule appointment with ID ${id} because it has been cancelled`
+      );
+    }
+    if (appointment.status === AppointmentStatus.COMFIRMED) {
+      throw new BadRequestException(
+        `Cannot reschedule appointment with ID ${id} because it has been confirmed`
+      );
+    }
 
     const doctor = await this.doctorService.getOne({
       where: { id: appointmentDto.doctorId },
