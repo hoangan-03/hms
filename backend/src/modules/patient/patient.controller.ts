@@ -102,7 +102,7 @@ export class PatientController {
     return this.patientService.updateProfile(patientId, updateData);
   }
 
-  @Patch("profile/doctor-update")
+  @Patch("profile/doctor-update/:id")
   @Roles(Role.DOCTOR)
   @ApiOperation({
     summary: "Update patient profile by doctor - Role: Doctor",
