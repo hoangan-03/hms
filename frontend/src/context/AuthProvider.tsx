@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {toast} from 'react-toastify';
 
 import {useAxiosInterceptorContext} from '@/lib/axios/AxiosInterceptor';
+import {OAUTH_PROVIDER} from '@/modules/auth/auth.enum';
 import {ILoginRequest, IProfile} from '@/modules/auth/auth.interface';
 import {AuthService} from '@/modules/auth/auth.service';
 import {useGetProfile} from '@/modules/auth/auth.swr';
@@ -16,7 +17,9 @@ type Authentication = {
         isLoading: boolean;
     };
     onLogin: (data: ILoginRequest) => void;
+    onLoginOAuth: (provider: OAUTH_PROVIDER) => void;
     onLogout: () => void;
+    mutateUser: () => void;
     setDidClickLogout: (value: boolean) => void;
 };
 
@@ -29,6 +32,8 @@ const initialState: Authentication = {
     },
     onLogin: () => {},
     onLogout: () => {},
+    onLoginOAuth: () => {},
+    mutateUser: () => {},
     setDidClickLogout: () => {},
 };
 
@@ -60,6 +65,15 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         }
     };
 
+    const onLoginOAuth = (provider: OAUTH_PROVIDER) => {
+        if (provider === OAUTH_PROVIDER.GOOGLE) {
+            window.location.href = AuthService.ROUTES.LOGIN_GOOGLE;
+        }
+        if (provider === OAUTH_PROVIDER.FACEBOOK) {
+            window.location.href = AuthService.ROUTES.LOGIN_FACEBOOK;
+        }
+    };
+
     const onLogout = async () => {
         try {
             await AuthService.logout();
@@ -78,6 +92,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 state: {user: data as IProfile, isAuth, didClickLogout, isLoading},
                 onLogin,
                 onLogout,
+                onLoginOAuth,
+                mutateUser,
                 setDidClickLogout,
             }}
         >

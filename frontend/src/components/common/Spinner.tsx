@@ -7,6 +7,7 @@ export const spinnerVariants = cva('rounded-full border-2', {
     variants: {
         variant: {
             primary: 'border-white border-t-primary',
+            secondary: 'border-white border-t-secondary',
         },
     },
     defaultVariants: {

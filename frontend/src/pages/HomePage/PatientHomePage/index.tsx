@@ -10,26 +10,53 @@ import {IAppointment} from '@/modules/appointment/appointment.interface';
 import {useGetAppointments} from '@/modules/appointment/appointment.swr';
 
 import ModalCreateAppointment from './ModalCreateAppointment';
+import ModalUpdateAppointment from './ModalUpdateAppointment';
 
 enum ActionKind {
     MODAL_CREATE_APPOINTMENT_SHOW = 'MODAL_CREATE_APPOINTMENT_SHOW',
+    MODAL_UPDATE_APPOINTMENT_SHOW = 'MODAL_UPDATE_APPOINTMENT_SHOW',
     NONE = 'NONE',
 }
 
-interface Action {
+interface Action<T = undefined> {
     type: ActionKind;
+    payload?: T;
 }
+
+type ShowUpdateAppointmentModalPayload = {
+    appointment: IAppointment;
+};
+
+const actions = {
+    showCreateAppointmentModal: (): Action => ({
+        type: ActionKind.MODAL_CREATE_APPOINTMENT_SHOW,
+    }),
+    showUpdateAppointmentStatusModal: (appointment: IAppointment): Action<ShowUpdateAppointmentModalPayload> => ({
+        type: ActionKind.MODAL_UPDATE_APPOINTMENT_SHOW,
+        payload: {appointment},
+    }),
+    closeModal: (): Action => ({
+        type: ActionKind.NONE,
+    }),
+};
 
 interface State {
     type: ActionKind;
+    appointment?: IAppointment;
 }
 
-const reducer = (state: State, action: Action): State => {
+const reducer = (state: State, action: Action<unknown>): State => {
     switch (action.type) {
         case ActionKind.MODAL_CREATE_APPOINTMENT_SHOW:
             return {
                 ...state,
                 type: ActionKind.MODAL_CREATE_APPOINTMENT_SHOW,
+            };
+        case ActionKind.MODAL_UPDATE_APPOINTMENT_SHOW:
+            return {
+                ...state,
+                type: ActionKind.MODAL_UPDATE_APPOINTMENT_SHOW,
+                appointment: (action.payload as ShowUpdateAppointmentModalPayload).appointment,
             };
         default:
             return {
@@ -102,6 +129,26 @@ function PatientHomePage() {
                 </div>
             ),
         },
+        {
+            id: 'actions',
+            header: () => <div className='font-bold'>Actions</div>,
+            cell: ({row}) => (
+                <div className='flex gap-2'>
+                    <Button
+                        size='icon'
+                        variant='none'
+                        onClick={() => dispatch(actions.showUpdateAppointmentStatusModal(row.original))}
+                    >
+                        <Icon
+                            name='pencil'
+                            width={18}
+                            height={18}
+                            className='text-primary-light hover:brightness-110'
+                        />
+                    </Button>
+                </div>
+            ),
+        },
     ];
 
     return (
@@ -116,7 +163,7 @@ function PatientHomePage() {
                 <Button
                     className='w-60 items-center'
                     suffixIcon={<Icon name='add-round-fill' className='text-primary-light' />}
-                    onClick={() => dispatch({type: ActionKind.MODAL_CREATE_APPOINTMENT_SHOW})}
+                    onClick={() => dispatch(actions.showCreateAppointmentModal())}
                 >
                     Create Appointment
                 </Button>
@@ -138,9 +185,16 @@ function PatientHomePage() {
             </div>
             <ModalCreateAppointment
                 open={state.type === ActionKind.MODAL_CREATE_APPOINTMENT_SHOW}
-                onClose={() => dispatch({type: ActionKind.NONE})}
+                onClose={() => dispatch(actions.closeModal())}
                 autoFocus={false}
                 onSuccessfulSubmit={() => mutate()}
+            />
+            <ModalUpdateAppointment
+                open={state.type === ActionKind.MODAL_UPDATE_APPOINTMENT_SHOW}
+                onClose={() => dispatch(actions.closeModal())}
+                onSubmitSuccess={() => mutate()}
+                autoFocus={false}
+                data={state.appointment}
             />
         </div>
     );

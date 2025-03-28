@@ -25,3 +25,11 @@ export interface IPatientBilling extends BaseEntity {
     amount: number;
     billingDate: string; // 'YYYY-MM-DD'
 }
+
+export interface IUpdatePatient {
+    name?: string;
+    age?: number;
+    gender?: Exclude<GENDER, GENDER.NULL>;
+    phoneNumber?: string;
+    address?: string;
+}

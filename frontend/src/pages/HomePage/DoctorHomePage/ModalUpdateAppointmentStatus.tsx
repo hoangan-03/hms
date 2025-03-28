@@ -58,7 +58,9 @@ function ModalUpdateAppointmentStatus({open, autoFocus, data, onClose, onSucessf
             <DialogContent className='min-w-[600px]' autoFocus={autoFocus}>
                 <DialogHeader>
                     <DialogTitle>Update Appointment Status</DialogTitle>
-                    <DialogDescription>Choose 'Cancel' or 'Confirm' to update status</DialogDescription>
+                    <DialogDescription className='font-bold'>
+                        Choose 'Cancel' or 'Confirm' to update status
+                    </DialogDescription>
                 </DialogHeader>
                 <form className='space-y-4'>
                     <div className='flex items-center justify-between gap-8'>
@@ -77,7 +79,7 @@ function ModalUpdateAppointmentStatus({open, autoFocus, data, onClose, onSucessf
                     </div>
                     <div className='space-y-2'>
                         <Label>Notes</Label>
-                        <Textarea className='max-h-32 min-h-20' value={data?.notes} disabled />
+                        <Textarea className='max-h-32 min-h-20' value={data?.notes || ''} disabled />
                     </div>
                     <div className='flex justify-center gap-16'>
                         <Button

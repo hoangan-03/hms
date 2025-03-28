@@ -29,6 +29,12 @@ const sidebarContent: SidebarContent[] = [
         icon: <Icon name='two-people' width={20} height={20} />,
         role: [ROLE.DOCTOR],
     },
+    {
+        label: 'Medical Records',
+        route: ENUM_ROUTES.MEDICAL_RECORDS,
+        icon: <Icon name='document-text' width={20} height={20} />,
+        role: [ROLE.DOCTOR],
+    },
 ];
 
 function Sidebar() {

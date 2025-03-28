@@ -13,7 +13,6 @@ const AuthRoute = () => {
 
     useEffect(() => {
         if (isAuth && !isLoading) {
-            console.log('this runs?');
             navigate(ENUM_ROUTES.HOME);
         }
     }, [navigate, isAuth, isLoading]);

@@ -31,13 +31,11 @@ function RegisterPage() {
             password: '',
             confirmPassword: '',
         },
-        // mode: 'onSubmit',
         reValidateMode: 'onSubmit',
     });
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
-            // console.log(data);
             const payload: IRegisterRequest = {
                 username: data.username,
                 password: data.password,
@@ -70,10 +68,8 @@ function RegisterPage() {
                         <h1 className='text-[48px]'>Register Account</h1>
                         <div className='mt-8 flex items-center space-x-2'>
                             <p className='text-718096 text-lg'>Already have an account?</p>
-                            <Link to={ENUM_ROUTES.REGISTER}>
-                                <p className='text-primary text-lg font-medium underline hover:brightness-110'>
-                                    Sign in
-                                </p>
+                            <Link to={ENUM_ROUTES.LOGIN}>
+                                <p className='text-primary text-lg font-medium underline hover:brightness-110'>Login</p>
                             </Link>
                         </div>
                     </div>

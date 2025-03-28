@@ -17,7 +17,7 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary: 'bg-primary text-white shadow-xs hover:bg-primary/90',
-                cancel: 'bg-slate-200 text-slate-950 shadow-xs hover:bg-slate-300',
+                cancel: 'bg-slate-300 text-slate-950 shadow-xs hover:bg-slate-300',
                 error: 'bg-error text-white shadow-xs hover:bg-error/90',
                 success: 'bg-success text-white shadow-xs hover:bg-success/90',
                 none: '',

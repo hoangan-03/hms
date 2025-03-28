@@ -34,7 +34,7 @@ function Header() {
     const dropDownItems: DropdownItem[] = [
         {
             label: 'Profile',
-            link: ENUM_ROUTES.HOME,
+            link: ENUM_ROUTES.PROFILE,
         },
         {
             label: 'Logout',
@@ -45,7 +45,9 @@ function Header() {
     return (
         <div className='container'>
             <div className='flex h-[70px] items-center justify-between py-3 pr-8 pl-[60px]'>
-                <img src='/images/logo.png' alt='Logo' width={70} />
+                <Link to={ENUM_ROUTES.HOME}>
+                    <img src='/images/logo.png' alt='Logo' width={70} />
+                </Link>
                 <div className='flex items-center gap-6'>
                     <Avatar>
                         <AvatarImage src={avatar} />
@@ -64,7 +66,7 @@ function Header() {
                         <DropdownMenuContent align='end' sideOffset={8} className='bg-white'>
                             {dropDownItems.map((item, index) =>
                                 item.link ? (
-                                    <DropdownMenuItem key={index}>
+                                    <DropdownMenuItem asChild key={index}>
                                         <Link to={item.link}>
                                             <p>{item.label}</p>
                                             {item.icon}

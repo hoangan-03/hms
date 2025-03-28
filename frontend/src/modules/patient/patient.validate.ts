@@ -27,6 +27,7 @@ import {GENDER} from '../auth/auth.enum';
 // });
 
 const schemaUpdatePatient = yup.object().shape({
+    id: yup.number().required('ID is required'),
     name: yup.string().required('Name is required').nullable().min(3, 'Name must be at least 3 characters'),
 
     age: yup
@@ -48,7 +49,7 @@ const schemaUpdatePatient = yup.object().shape({
         .string()
         .required('Phone number is required')
         .nullable()
-        .matches(/^\d+$/, 'Phone number must contain only numbers')
+        .matches(/^\+?\d+$/, 'Phone number must contain only numbers')
         .min(10, 'Phone number must be at least 10 digits'),
 
     address: yup.string().required('Address is required').nullable().min(10, 'Address must be at least 10 characters'),

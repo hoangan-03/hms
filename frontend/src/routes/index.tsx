@@ -25,6 +25,14 @@ const protectedRoutes = [
         path: ENUM_ROUTES.PATIENTS,
         element: <Page.PatientsPage />,
     },
+    {
+        path: ENUM_ROUTES.MEDICAL_RECORDS,
+        element: <Page.MedicalRecordsPage />,
+    },
+    {
+        path: ENUM_ROUTES.PROFILE,
+        element: <Page.ProfilePage />,
+    },
 ];
 
 const authRoutes = [
@@ -35,6 +43,10 @@ const authRoutes = [
     {
         path: ENUM_ROUTES.REGISTER,
         element: <Page.RegisterPage />,
+    },
+    {
+        path: ENUM_ROUTES.OAUTH_CALLBACK,
+        element: <Page.OAuthCallbackPage />,
     },
 ];
 

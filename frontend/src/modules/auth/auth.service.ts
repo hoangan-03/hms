@@ -10,6 +10,8 @@ export class AuthService extends APIBaseService {
         REGISTER: APIBaseService.BASE_URL + '/auth/register',
         ME: APIBaseService.BASE_URL + '/auth/me',
         LOGOUT: APIBaseService.BASE_URL + '/auth/logout',
+        LOGIN_GOOGLE: APIBaseService.BASE_URL + '/auth/google',
+        LOGIN_FACEBOOK: APIBaseService.BASE_URL + '/auth/facebook',
     };
 
     public static async login(payload: ILoginRequest) {
@@ -26,5 +28,13 @@ export class AuthService extends APIBaseService {
 
     public static async logout() {
         return await axiosInstance.post<ResponseAPI<undefined>>(AuthService.ROUTES.LOGOUT);
+    }
+
+    public static async loginGoogle() {
+        return await axiosInstance.get<null>(AuthService.ROUTES.LOGIN_GOOGLE);
+    }
+
+    public static async loginFacebook() {
+        return await axiosInstance.get<null>(AuthService.ROUTES.LOGIN_FACEBOOK);
     }
 }

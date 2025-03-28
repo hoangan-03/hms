@@ -77,7 +77,7 @@ function PatientsPage() {
         }
     }, [navigate, user, isLoading]);
 
-    const {data} = useGetPatients(pagination);
+    const {data, mutate} = useGetPatients(pagination);
     const patients = data?.data || [];
     const paginationData = data?.pagination;
 
@@ -174,6 +174,10 @@ function PatientsPage() {
                 open={state.type === ActionKind.MODAL_PATIENT_DETAILS_SHOW}
                 onClose={() => dispatch(actions.closeModal())}
                 data={state.patient}
+                onSubmitSuccess={() => {
+                    mutate();
+                    setPagination({...pagination, page: 1});
+                }}
             />
         </div>
     );

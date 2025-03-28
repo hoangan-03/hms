@@ -8,7 +8,7 @@ export interface IAppointment extends BaseEntity {
     date: string; // 'YYYY-MM-DD'
     timeSlot: APPOINTMENT_TIME_SLOT;
     reason: string | null;
-    notes: string;
+    notes: string | null;
     status: APPOINTMENT_STATUS;
     doctor: IDoctor;
     patient: IPatient;
@@ -21,6 +21,8 @@ export interface ICreateAppointment {
     reason?: string;
     notes?: string;
 }
+
+export type IUpdateAppointment = ICreateAppointment;
 
 export interface IAvailableDoctorRequest {
     date: string; // 'YYYY-MM-DD'

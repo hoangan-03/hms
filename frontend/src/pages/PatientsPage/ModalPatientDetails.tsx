@@ -20,18 +20,21 @@ import {
 } from '@/components/ui';
 import {capitalize} from '@/lib/utils';
 import {GENDER} from '@/modules/auth/auth.enum';
-import {IPatient} from '@/modules/patient/patient.interface';
+import {IPatient, IUpdatePatient} from '@/modules/patient/patient.interface';
+import {PatientService} from '@/modules/patient/patient.service';
 import {updatePatientResolver} from '@/modules/patient/patient.validate';
 
 interface Props {
     open: boolean;
     data?: IPatient;
     onClose: () => void;
+    onSubmitSuccess?: () => void;
 }
 
 const genders = Object.values(GENDER);
 
 type FormValues = {
+    id: number;
     name: string | null;
     age: number | null;
     gender: GENDER | null;
@@ -39,7 +42,7 @@ type FormValues = {
     address: string | null;
 };
 
-function ModalPatientDetails({open, data, onClose}: Props) {
+function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
     const {
         control,
         handleSubmit,
@@ -48,6 +51,7 @@ function ModalPatientDetails({open, data, onClose}: Props) {
     } = useForm<FormValues>({
         resolver: updatePatientResolver,
         values: {
+            id: data?.id || 0,
             name: data?.name || '',
             age: data?.age || 0,
             gender: data?.gender || null,
@@ -64,7 +68,20 @@ function ModalPatientDetails({open, data, onClose}: Props) {
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
-            console.log(data);
+            if (data.id === 0) {
+                throw new Error('Invalid patient ID');
+            }
+            const payload: IUpdatePatient = {
+                name: data.name!,
+                age: data.age!,
+                gender: data.gender !== GENDER.NULL ? data.gender! : undefined,
+                phoneNumber: data.phoneNumber!,
+                address: data.address!,
+            };
+            await PatientService.doctorUpdatePatient(data.id, payload);
+            toast.success('Patient details updated successfully!');
+            onSubmitSuccess?.();
+            onClose();
         } catch (error) {
             console.error(error);
             toast.error('Failed to update patient details');

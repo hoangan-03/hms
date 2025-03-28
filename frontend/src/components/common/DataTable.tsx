@@ -23,7 +23,7 @@ interface DataTableProps<TData, TValue> {
     className?: string;
     childRowClassName?: string;
     onReturnTableToParentComponent?: (table: Table<TData>) => void;
-    renderChildRow?: (row: TData) => ReactNode;
+    childRow?: (row: TData) => ReactNode;
 }
 
 function DataTable<TData, TValue>({
@@ -35,17 +35,17 @@ function DataTable<TData, TValue>({
     onReturnTableToParentComponent,
     className,
     childRowClassName,
-    renderChildRow,
+    childRow,
 }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        ...(renderChildRow && {getExpandedRowModel: getExpandedRowModel()}),
+        ...(childRow && {getExpandedRowModel: getExpandedRowModel()}),
         state: {
             columnVisibility,
         },
-        ...(renderChildRow && {getRowCanExpand: () => !!renderChildRow}),
+        ...(childRow && {getRowCanExpand: () => !!childRow}),
     });
 
     useEffect(() => {
@@ -61,7 +61,7 @@ function DataTable<TData, TValue>({
             )}
             <div>
                 <TableUI>
-                    <TableHeader>
+                    <TableHeader className='hover:bg-primary-light/60'>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -82,8 +82,8 @@ function DataTable<TData, TValue>({
                                 <Fragment key={row.id}>
                                     <TableRow
                                         data-state={row.getIsSelected() && 'selected'}
-                                        className={cn('hover:bg-slate-300', renderChildRow && 'cursor-pointer')}
-                                        {...(renderChildRow && {
+                                        className={cn('hover:bg-slate-300', childRow && 'cursor-pointer')}
+                                        {...(childRow && {
                                             onClick: () => {
                                                 row.toggleExpanded();
                                             },
@@ -95,24 +95,27 @@ function DataTable<TData, TValue>({
                                             </TableCell>
                                         ))}
                                     </TableRow>
-                                    {renderChildRow && (
+                                    {childRow && (
                                         <TableRow
                                             className={cn(
-                                                'bg-inherit',
+                                                'group bg-slate-100 group-hover:bg-slate-200',
                                                 row.getIsExpanded() ? 'border-b' : 'border-b-0'
                                             )}
                                         >
-                                            <TableCell colSpan={table.getAllColumns().length} className='p-0'>
+                                            <TableCell
+                                                colSpan={table.getAllColumns().length}
+                                                className='p-0 group-hover:bg-slate-200'
+                                            >
                                                 <div
                                                     className={cn(
-                                                        'overflow-hidden transition-all duration-500 ease-in-out',
+                                                        'overflow-hidden transition-all duration-300 ease-in-out group-hover:bg-slate-200',
                                                         row.getIsExpanded()
-                                                            ? 'max-h-[500px] p-4 opacity-100'
+                                                            ? 'max-h-[500px] p-0 opacity-100'
                                                             : 'max-h-0 opacity-0',
                                                         childRowClassName
                                                     )}
                                                 >
-                                                    {renderChildRow?.(row.original)}
+                                                    {childRow?.(row.original)}
                                                 </div>
                                             </TableCell>
                                         </TableRow>

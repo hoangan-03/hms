@@ -9,3 +9,8 @@ export enum GENDER {
     OTHER = 'OTHER',
     NULL = 'UNSPECIFIED',
 }
+
+export enum OAUTH_PROVIDER {
+    GOOGLE = 'GOOGLE',
+    FACEBOOK = 'FACEBOOK',
+}
