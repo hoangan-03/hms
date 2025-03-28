@@ -136,15 +136,12 @@ export class AuthService {
   }
 
   logout(response: Response): { message: string } {
-    // Clear authentication cookies
     response.clearCookie("token", {
       httpOnly: true,
       signed: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
     });
-
-    // Remove the authorization header
     response.removeHeader("Authorization");
 
     return { message: "Logged out successfully" };
