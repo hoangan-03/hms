@@ -143,38 +143,46 @@ export class AppointmentService {
     return appointment;
   }
 
-  async getAvailableDoctorsForTimeSlot(
+   async getAvailableDoctorsForTimeSlot(
     date: string,
     timeSlot: TimeSlot,
     departmentId?: number
   ): Promise<Doctor[]> {
     const appointmentDate = new Date(date);
-
-    const bookedDoctorIds = await this.appointmentRepository
+  
+    // Improve query to correctly fetch booked doctor IDs
+    const bookedAppointments = await this.appointmentRepository
       .createQueryBuilder("appointment")
-      .select("appointment.doctor.id")
+      .leftJoinAndSelect("appointment.doctor", "doctor")
       .where("appointment.date = :date", { date: appointmentDate })
       .andWhere("appointment.timeSlot = :timeSlot", { timeSlot })
-      .getMany()
-      .then((appointments) => appointments.map((appt) => appt.doctor.id));
+      .andWhere("appointment.status != :cancelledStatus", {
+        cancelledStatus: AppointmentStatus.CANCELLED
+      })
+      .getMany();
+      
+    const bookedDoctorIds = bookedAppointments
+      .map(appointment => appointment.doctor.id)
+      .filter(id => id !== undefined);
+      
     const doctorQueryBuilder = this.doctorRepository
       .createQueryBuilder("doctor")
       .leftJoinAndSelect("doctor.department", "department");
-
+  
     // Filter by department if provided
     if (departmentId) {
       doctorQueryBuilder.andWhere("department.id = :departmentId", {
         departmentId,
       });
     }
-
+  
     // Exclude already booked doctors
     if (bookedDoctorIds.length > 0) {
       doctorQueryBuilder.andWhere("doctor.id NOT IN (:...bookedDoctorIds)", {
         bookedDoctorIds,
       });
     }
-
+  
     return doctorQueryBuilder.getMany();
   }
 

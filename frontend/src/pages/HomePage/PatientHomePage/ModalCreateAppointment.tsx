@@ -1,3 +1,4 @@
+import {AlertCircle, CalendarIcon, Clock, FileText, NotepadText, Plus, User} from 'lucide-react';
 import {useEffect} from 'react';
 import {Controller, SubmitHandler, useForm} from 'react-hook-form';
 import {toast} from 'react-toastify';
@@ -7,7 +8,6 @@ import {
     Button,
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     Label,
@@ -17,6 +17,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
+    Separator,
     Textarea,
 } from '@/components/ui';
 import {timeZoneOptions} from '@/constants/dateTime';
@@ -36,7 +37,6 @@ interface Props {
 }
 
 const timeSlots = Object.values(APPOINTMENT_TIME_SLOT);
-
 const today = new Date(new Intl.DateTimeFormat('en-US', timeZoneOptions).format(new Date()));
 
 type FormValues = {
@@ -65,7 +65,7 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
         },
     });
 
-    const {data: doctors} = useGetAvailableDoctors({
+    const {data: doctors = [], isLoading} = useGetAvailableDoctors({
         date: formatDate(watch('date'), {dateKind: 'YYYY-MM-DD', dateDelimiter: '-'}).day,
         timeSlot: watch('timeSlot'),
     });
@@ -97,54 +97,81 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className='min-w-[600px]' autoFocus={autoFocus}>
+            <DialogContent className='max-w-[800px] min-w-[650px] rounded-xl p-6' autoFocus={autoFocus}>
                 <DialogHeader>
-                    <DialogTitle>Create Appointment</DialogTitle>
-                    <DialogDescription>Please choose the appropriate time and doctor</DialogDescription>
+                    <DialogTitle className='flex items-center gap-2 text-2xl'>
+                        <Plus size={20} className='text-primary' />
+                        Schedule your appointment
+                    </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-                    <div className='flex items-center justify-between gap-8'>
-                        <div className='flex w-1/2 items-center gap-4 space-y-2'>
-                            <Label>Date</Label>
-                            <Controller
-                                control={control}
-                                name='date'
-                                render={({field: {onChange, value}}) => (
-                                    <DatePicker currentDate={value} setCurrentDate={onChange} minDate={today} />
-                                )}
-                            />
-                        </div>
-                        <div className='flex w-1/2 items-center gap-4 space-y-2'>
-                            <Label>Time</Label>
-                            <Controller
-                                control={control}
-                                name='timeSlot'
-                                render={({field: {onChange, value}}) => (
-                                    <Select onValueChange={onChange} value={value}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={formatAppointmentTime(value || timeSlots[0])} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {timeSlots.map((item, index) => (
-                                                    <SelectItem key={index} value={item}>
-                                                        {formatAppointmentTime(item)}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
+
+                <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+                    {/* Scheduling Section */}
+                    <div className='rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm'>
+                        <h3 className='mb-3 flex items-center text-sm font-medium text-gray-500 uppercase'>
+                            <CalendarIcon className='mr-1 h-4 w-4' />
+                            Scheduling
+                        </h3>
+
+                        <div className='grid grid-cols-2 gap-6'>
+                            <div className='space-y-2'>
+                                <Label className='flex items-center text-gray-700'>
+                                    <CalendarIcon className='mr-1 h-4 w-4 opacity-70' /> Date
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name='date'
+                                    render={({field: {onChange, value}}) => (
+                                        <DatePicker
+                                            currentDate={value}
+                                            setCurrentDate={onChange}
+                                            minDate={today}
+                                            className='w-full'
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            <div className='space-y-2'>
+                                <Label className='flex items-center text-gray-700'>
+                                    <Clock className='mr-1 h-4 w-4 opacity-70' /> Time Slot
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name='timeSlot'
+                                    render={({field: {onChange, value}}) => (
+                                        <Select onValueChange={onChange} value={value}>
+                                            <SelectTrigger className='w-full'>
+                                                <SelectValue
+                                                    placeholder={formatAppointmentTime(value || timeSlots[0])}
+                                                />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {timeSlots.map((item, index) => (
+                                                        <SelectItem key={index} value={item}>
+                                                            {formatAppointmentTime(item)}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
-                    <div className='flex gap-4 space-y-2'>
-                        <Label>Doctor</Label>
+
+                    {/* Doctor Selection */}
+                    <div className='space-y-2'>
+                        <Label className='flex items-center text-gray-700'>
+                            <User className='mr-1 h-4 w-4 opacity-70' /> Doctor
+                        </Label>
                         <Controller
                             control={control}
                             name='doctor'
                             render={({field: {onChange, value}}) => (
-                                <div className='flex items-center gap-4'>
+                                <div className='space-y-1'>
                                     <Select
                                         onValueChange={(doctorId) => {
                                             const selectedDoctor = doctors.find((doc) => doc.id === parseInt(doctorId));
@@ -153,8 +180,14 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
                                         value={value?.id?.toString()}
                                         disabled={doctors.length <= 0}
                                     >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={doctors.length > 0 ? 'Select a doctor' : '--'} />
+                                        <SelectTrigger className='w-full'>
+                                            <SelectValue
+                                                placeholder={
+                                                    doctors.length > 0
+                                                        ? 'Select a doctor'
+                                                        : 'No doctors available for this time'
+                                                }
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
@@ -167,50 +200,80 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
-                                    <p className='text-error'>{errors.doctor?.message}</p>
+                                    {errors.doctor && (
+                                        <p className='flex items-center text-sm text-red-500'>
+                                            <AlertCircle className='mr-1 h-3 w-3' />
+                                            {errors.doctor.message}
+                                        </p>
+                                    )}
+                                    {!isLoading && doctors.length <= 0 && (
+                                        <p className='mt-1 flex items-center text-sm text-amber-600'>
+                                            <AlertCircle className='mr-1 h-3 w-3' />
+                                            No doctors are available for this time slot. Try another date or time.
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         />
                     </div>
-                    <div className='space-y-2'>
-                        <Label>Reason</Label>
-                        <Controller
-                            control={control}
-                            name='reason'
-                            render={({field}) => (
-                                <Textarea
-                                    errorMessage={errors.reason?.message}
-                                    {...field}
-                                    className='max-h-32 min-h-20'
+
+                    {/* Additional Information */}
+                    <div className='rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm'>
+                        <h3 className='mb-3 flex items-center text-sm font-medium text-gray-500 uppercase'>
+                            <FileText className='mr-1 h-4 w-4' />
+                            Additional Information
+                        </h3>
+
+                        <div className='space-y-4'>
+                            <div className='space-y-2'>
+                                <Label className='text-gray-700'>Reason for Visit</Label>
+                                <Controller
+                                    control={control}
+                                    name='reason'
+                                    render={({field}) => (
+                                        <Textarea
+                                            className='min-h-24 resize-none'
+                                            {...field}
+                                            placeholder='Briefly describe the reason for your appointment...'
+                                            errorMessage={errors.reason?.message}
+                                        />
+                                    )}
                                 />
-                            )}
-                        />
-                    </div>
-                    <div className='space-y-2'>
-                        <Label>Notes</Label>
-                        <Controller
-                            control={control}
-                            name='notes'
-                            render={({field}) => (
-                                <Textarea
-                                    errorMessage={errors.notes?.message}
-                                    {...field}
-                                    className='max-h-32 min-h-20'
+                            </div>
+
+                            <div className='space-y-2'>
+                                <Label className='flex items-center text-gray-700'>
+                                    <NotepadText className='mr-1 h-4 w-4 opacity-70' /> Additional Notes
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name='notes'
+                                    render={({field}) => (
+                                        <Textarea
+                                            className='min-h-24 resize-none'
+                                            {...field}
+                                            placeholder='Any additional information or medical history the doctor should know...'
+                                            errorMessage={errors.notes?.message}
+                                        />
+                                    )}
                                 />
-                            )}
-                        />
+                            </div>
+                        </div>
                     </div>
-                    <div className='flex justify-center gap-16'>
-                        <Button variant='cancel' className='w-fit px-4' onClick={onClose}>
+
+                    {/* Action Buttons */}
+                    <Separator className='my-6' />
+                    <div className='flex justify-end gap-3'>
+                        <Button variant='outline' onClick={onClose} className='px-6'>
                             Cancel
                         </Button>
                         <Button
                             type='submit'
-                            className='w-fit px-4'
+                            className='px-8'
                             disabled={isSubmitting || !isDirty}
                             isLoading={isSubmitting}
                         >
-                            Create
+                            Schdule Appointment
                         </Button>
                     </div>
                 </form>

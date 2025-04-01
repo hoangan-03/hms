@@ -165,7 +165,7 @@ function PatientHomePage() {
                     suffixIcon={<Icon name='add-round-fill' className='text-primary-light' />}
                     onClick={() => dispatch(actions.showCreateAppointmentModal())}
                 >
-                    Create Appointment
+                    Schedule Appointment
                 </Button>
             </div>
             <div className='rounded-md bg-white'>
