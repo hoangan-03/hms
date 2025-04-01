@@ -85,10 +85,11 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
                 ...(data.reason && {reason: data.reason}),
                 ...(data.notes && {notes: data.notes}),
             };
-            await AppointmentService.createAppointment(payload);
-            toast.success('Appointment created successfully');
-            onSuccessfulSubmit();
-            onClose();
+            console.log('payload', payload);
+            // await AppointmentService.createAppointment(payload);
+            // toast.success('Appointment created successfully');
+            // onSuccessfulSubmit();
+            // onClose();
         } catch (error) {
             console.error(error);
             toast.error('Failed to create appointment');

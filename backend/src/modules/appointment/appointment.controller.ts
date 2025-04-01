@@ -111,58 +111,6 @@ export class AppointmentController {
     return this.appointmentService.createAppointment(patientId, appointmentDto);
   }
 
-  @Get(":appointmentId")
-  @Roles(Role.PATIENT, Role.DOCTOR)
-  @ApiOperation({ summary: "Get specific appointment - Role: Doctor/Patient" })
-  @ApiResponse({
-    status: 200,
-    description: "Return specific appointment",
-    type: Appointment,
-  })
-  @ApiResponse({
-    status: 404,
-    description: "Not Found - Appointment not found",
-  })
-  async getAppointment(
-    @Param("appointmentId", ParseIntPipe) appointmentId: number
-  ): Promise<Appointment> {
-    return this.appointmentService.getAppointment(appointmentId);
-  }
-
-  @Patch(":appointmentId")
-  @Roles(Role.PATIENT)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Update an appointment - Role: Patient" })
-  @ApiBody({ type: CreateAppointmentDto })
-  @ApiResponse({
-    status: 200,
-    description: "Appointment updated successfully",
-    type: Appointment,
-  })
-  @ApiResponse({
-    status: 400,
-    description: "Bad Request - Invalid input data",
-  })
-  @ApiResponse({
-    status: 401,
-    description: "Unauthorized - Invalid or missing token",
-  })
-  @ApiResponse({
-    status: 404,
-    description: "Not Found - Appointment not found",
-  })
-  async updateAppointment(
-    @CurrentUser("id") patientId: number,
-    @Param("appointmentId", ParseIntPipe) appointmentId: number,
-    @Body() appointmentDto: CreateAppointmentDto
-  ): Promise<Appointment> {
-    return this.appointmentService.rescheduleAppointment(
-      patientId,
-      appointmentId,
-      appointmentDto
-    );
-  }
-
   @Get("available-doctors")
   @Roles(Role.PATIENT)
   @ApiOperation({
@@ -336,5 +284,57 @@ export class AppointmentController {
     @Param("appointmentId", ParseIntPipe) appointmentId: number
   ): Promise<Appointment> {
     return this.appointmentService.confirmAppointment(appointmentId);
+  }
+
+  @Get(":appointmentId")
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: "Get specific appointment - Role: Doctor/Patient" })
+  @ApiResponse({
+    status: 200,
+    description: "Return specific appointment",
+    type: Appointment,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Not Found - Appointment not found",
+  })
+  async getAppointment(
+    @Param("appointmentId", ParseIntPipe) appointmentId: number
+  ): Promise<Appointment> {
+    return this.appointmentService.getAppointment(appointmentId);
+  }
+
+  @Patch(":appointmentId")
+  @Roles(Role.PATIENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Update an appointment - Role: Patient" })
+  @ApiBody({ type: CreateAppointmentDto })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment updated successfully",
+    type: Appointment,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request - Invalid input data",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Not Found - Appointment not found",
+  })
+  async updateAppointment(
+    @CurrentUser("id") patientId: number,
+    @Param("appointmentId", ParseIntPipe) appointmentId: number,
+    @Body() appointmentDto: CreateAppointmentDto
+  ): Promise<Appointment> {
+    return this.appointmentService.rescheduleAppointment(
+      patientId,
+      appointmentId,
+      appointmentDto
+    );
   }
 }

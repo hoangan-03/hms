@@ -96,14 +96,14 @@ function LoginPage() {
                     <div className='space-y-4'>
                         <Separator className='bg-black' />
                         <Button
-                            className='w-full rounded-3xl bg-white font-bold text-black/[54%]'
+                            className='w-full rounded-3xl bg-white font-bold text-black/[54%] hover:bg-gray-100'
                             onClick={() => onLoginOAuth(OAUTH_PROVIDER.GOOGLE)}
                             prefixIcon={<Icon name='google' />}
                         >
                             Sign In with Google
                         </Button>
                         <Button
-                            className='bg-1877f2 w-full rounded-3xl font-bold text-white'
+                            className='bg-1877f2 w-full rounded-3xl font-bold text-white hover:bg-blue-500'
                             onClick={() => onLoginOAuth(OAUTH_PROVIDER.FACEBOOK)}
                             prefixIcon={<Icon name='facebook' />}
                         >
@@ -112,13 +112,44 @@ function LoginPage() {
                     </div>
                 </div>
             </div>
-            <div className='from-primary to-primary-light col-span-6 flex flex-col items-center justify-center space-y-9 bg-gradient-to-b'>
-                <img src='/images/hospital.png' alt='Hospital image' width={425} />
-                <h2 className='w-[600px] text-4xl text-white'>Enhancing Healthcare Management</h2>
-                <p className='w-[525px] text-justify text-xl text-white'>
-                    Streamline hospital operations with our advanced management system. Improve patient care, track
-                    records efficiently, and optimize workflows for a seamless healthcare experience.
-                </p>
+            <div className='from-primary via-primary/95 to-primary-light relative col-span-6 overflow-hidden bg-gradient-to-br'>
+                {/* Decorative circles */}
+                <div className='absolute top-1/4 right-0 h-56 w-56 rounded-full bg-white/5 blur-xl' />
+                <div className='absolute bottom-1/4 left-0 h-64 w-64 rounded-full bg-white/5 blur-xl' />
+
+                {/* Content container */}
+                <div className='relative z-10 mx-auto flex h-full max-w-3xl flex-col items-center justify-center px-8 py-12 md:px-12 lg:px-16'>
+                    {/* Image with animation */}
+                    <div className='mb-10 w-full max-w-md'>
+                        <img
+                            src='/images/hospital.png'
+                            alt='Hospital visualization'
+                            className='animate-float h-auto w-full object-contain drop-shadow-xl'
+                        />
+                    </div>
+
+                    {/* Text content with better spacing */}
+                    <div className='text-center'>
+                        <h2 className='mb-6 text-2xl leading-tight font-bold text-white sm:text-3xl'>
+                            Enhancing Healthcare Management
+                        </h2>
+
+                        <p className='text-lg leading-relaxed text-white/90'>
+                            Streamline hospital operations with our advanced management system. Improve patient care,
+                            track records efficiently, and optimize workflows for a seamless healthcare experience.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Bottom wave */}
+                <div className='absolute right-0 bottom-0 left-0'>
+                    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' className='h-auto w-full'>
+                        <path
+                            fill='rgba(255,255,255,0.05)'
+                            d='M0,64L80,80C160,96,320,128,480,122.7C640,117,800,75,960,64C1120,53,1280,75,1360,85.3L1440,96L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z'
+                        />
+                    </svg>
+                </div>
             </div>
         </>
     );

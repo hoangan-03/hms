@@ -28,6 +28,8 @@ function useGetAppointments(pagination?: PaginationRequest, shouldFetch = true) 
 function useGetAvailableDoctors(payload: IAvailableDoctorRequest, shouldFetch = true) {
     const url = AppointmentService.ROUTES.AVAILABLE_DOCTORS;
 
+    console.log('payload', payload);
+
     const {data, mutate, error, isLoading, isValidating} = useSWR(
         shouldFetch ? {...payload, key: url} : null,
         AppointmentService.getAvailableDoctors,
