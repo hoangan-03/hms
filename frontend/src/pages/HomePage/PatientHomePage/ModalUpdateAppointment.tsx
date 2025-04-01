@@ -89,11 +89,10 @@ function ModalUpdateAppointment({open, autoFocus, data, onClose, onSubmitSuccess
                 ...(data.reason && {reason: data.reason}),
                 ...(data.notes && {notes: data.notes}),
             };
-            console.log(payload);
-            // await AppointmentService.updateAppointment(data.id, payload);
-            // toast.success('Appointment updated successfully');
-            // onSubmitSuccess?.();
-            // onClose();
+            await AppointmentService.updateAppointment(data.id, payload);
+            toast.success('Appointment updated successfully');
+            onSubmitSuccess?.();
+            onClose();
         } catch (error) {
             console.error(error);
             toast.error('Failed to update appointment');
