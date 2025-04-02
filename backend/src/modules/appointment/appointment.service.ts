@@ -143,13 +143,13 @@ export class AppointmentService {
     return appointment;
   }
 
-   async getAvailableDoctorsForTimeSlot(
+  async getAvailableDoctorsForTimeSlot(
     date: string,
     timeSlot: TimeSlot,
     departmentId?: number
   ): Promise<Doctor[]> {
     const appointmentDate = new Date(date);
-  
+
     // Improve query to correctly fetch booked doctor IDs
     const bookedAppointments = await this.appointmentRepository
       .createQueryBuilder("appointment")
@@ -157,32 +157,32 @@ export class AppointmentService {
       .where("appointment.date = :date", { date: appointmentDate })
       .andWhere("appointment.timeSlot = :timeSlot", { timeSlot })
       .andWhere("appointment.status != :cancelledStatus", {
-        cancelledStatus: AppointmentStatus.CANCELLED
+        cancelledStatus: AppointmentStatus.CANCELLED,
       })
       .getMany();
-      
+
     const bookedDoctorIds = bookedAppointments
-      .map(appointment => appointment.doctor.id)
-      .filter(id => id !== undefined);
-      
+      .map((appointment) => appointment.doctor.id)
+      .filter((id) => id !== undefined);
+
     const doctorQueryBuilder = this.doctorRepository
       .createQueryBuilder("doctor")
       .leftJoinAndSelect("doctor.department", "department");
-  
+
     // Filter by department if provided
     if (departmentId) {
       doctorQueryBuilder.andWhere("department.id = :departmentId", {
         departmentId,
       });
     }
-  
+
     // Exclude already booked doctors
     if (bookedDoctorIds.length > 0) {
       doctorQueryBuilder.andWhere("doctor.id NOT IN (:...bookedDoctorIds)", {
         bookedDoctorIds,
       });
     }
-  
+
     return doctorQueryBuilder.getMany();
   }
 
@@ -314,7 +314,7 @@ export class AppointmentService {
       );
     }
 
-    appointment.status = AppointmentStatus.COMFIRMED;
+    appointment.status = AppointmentStatus.CONFIRMED;
     const updatedAppointment = await this.appointmentRepository.save(
       appointment
     );
@@ -343,7 +343,7 @@ export class AppointmentService {
         `Cannot reschedule appointment with ID ${id} because it has been cancelled`
       );
     }
-    if (appointment.status === AppointmentStatus.COMFIRMED) {
+    if (appointment.status === AppointmentStatus.CONFIRMED) {
       throw new BadRequestException(
         `Cannot reschedule appointment with ID ${id} because it has been confirmed`
       );

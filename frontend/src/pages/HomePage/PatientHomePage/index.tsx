@@ -118,7 +118,7 @@ function PatientHomePage() {
                     <Badge
                         variant={
                             row.original.status === 'PENDING'
-                                ? 'info'
+                                ? 'warning'
                                 : row.original.status === 'CANCELLED'
                                   ? 'error'
                                   : 'success'

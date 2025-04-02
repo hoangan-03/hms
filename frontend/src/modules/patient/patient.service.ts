@@ -15,9 +15,11 @@ export class PatientService extends APIBaseService {
         DOCTOR_UPDATE_PATIENT: (id: number) => APIBaseService.BASE_URL + `/patients/profile/doctor-update/${id}`,
     };
 
-    public static async getPatients() {
+    public static async getPatients(pagination?: PaginationRequest) {
         return await axiosInstance
-            .get<PaginationResponse<IPatient[]>>(PatientService.ROUTES.PATIENTS)
+            .get<PaginationResponse<IPatient[]>>(PatientService.ROUTES.PATIENTS, {
+                params: pagination,
+            })
             .then((res) => res.data);
     }
 

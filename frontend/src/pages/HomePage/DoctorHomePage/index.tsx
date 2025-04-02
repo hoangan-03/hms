@@ -107,7 +107,7 @@ function DoctorHomePage() {
                     <Badge
                         variant={
                             row.original.status === 'PENDING'
-                                ? 'info'
+                                ? 'warning'
                                 : row.original.status === 'CANCELLED'
                                   ? 'error'
                                   : 'success'
@@ -144,12 +144,9 @@ function DoctorHomePage() {
         <div className='space-y-7 p-7'>
             <div className='space-y-1'>
                 <h1>Appointments Management</h1>
-                <p>
-                    It is nice to see you, <span className='font-bold'>{user?.name}</span>
-                </p>
             </div>
             <div className='rounded-md bg-white'>
-                <ScrollArea className={cn('py-1', appointments.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
+                <ScrollArea className={cn('py-1', appointments.length <= 8 ? 'h-fit' : 'h-[70vh]')}>
                     <DataTable data={appointments} columns={columns} />
                     <Separator className='bg-black' />
                     {appointments && paginationData && paginationData.totalItems > 0 && (

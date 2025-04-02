@@ -156,7 +156,7 @@ function PatientsPage() {
         <div className='space-y-7 p-7'>
             <h1>Patients Management</h1>
             <div className='rounded-md bg-white'>
-                <ScrollArea className={cn('py-1', patients.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
+                <ScrollArea className={cn('py-1', patients.length <= 8 ? 'h-fit' : 'h-[70vh]')}>
                     <DataTable data={patients} columns={columns} />
                     <Separator className='bg-black' />
                     {patients && paginationData && paginationData.totalItems > 0 && (

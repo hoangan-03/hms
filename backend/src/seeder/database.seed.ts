@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { faker } from "@faker-js/faker";
+import { fa, faker } from "@faker-js/faker";
 import { Patient } from "@/entities/patient.entity";
 import { Doctor } from "@/entities/doctor.entity";
 import { Department } from "@/entities/department.entity";
@@ -18,23 +18,23 @@ import { AppointmentStatus } from "@/modules/appointment/enums/appointment-statu
 const departmentData = [
   {
     name: "Cardiology",
-    description: "Diagnosis and treatment of heart diseases"
+    description: "Diagnosis and treatment of heart diseases",
   },
   {
     name: "Neurology",
-    description: "Diagnosis and treatment of nervous system disorders"
+    description: "Diagnosis and treatment of nervous system disorders",
   },
   {
     name: "Pediatrics",
-    description: "Medical care for infants, children, and adolescents"
+    description: "Medical care for infants, children, and adolescents",
   },
   {
     name: "Orthopedics",
-    description: "Diagnosis and treatment of musculoskeletal conditions"
+    description: "Diagnosis and treatment of musculoskeletal conditions",
   },
   {
     name: "Dermatology",
-    description: "Diagnosis and treatment of skin conditions"
+    description: "Diagnosis and treatment of skin conditions",
   },
 ];
 
@@ -49,19 +49,23 @@ const insuranceProviders = [
   "Medicaid",
 ];
 
-const createFakeDoctor = async (departmentId: number) => {
+const createFakeDoctor = async (departmentId: number, isTestDoctor = false) => {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
   // const username = faker.internet.username();
   // const orignial_password = faker.internet.password();
-  const username = "testdoctor";
-  const orignial_password = "Password123@";
+  const username = isTestDoctor
+    ? "testdoctor"
+    : faker.internet.username().toLowerCase();
+  const orignial_password = isTestDoctor
+    ? "Password123@"
+    : faker.internet.password().toLowerCase();
   const password = await hashPassword(orignial_password);
   const role = Role.DOCTOR;
-  
+
   return {
     name: `Dr. ${firstName} ${lastName}`,
-    phoneNumber: faker.phone.number({ style: 'international' }),
+    phoneNumber: faker.phone.number({ style: "international" }),
     department: { id: departmentId },
     username,
     password,
@@ -69,13 +73,17 @@ const createFakeDoctor = async (departmentId: number) => {
   };
 };
 
-const createFakePatient = async () => {
+const createFakePatient = async (isTestPatient = false) => {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
   // const username = faker.internet.username();
   // const orignial_password = faker.internet.password();
-  const username = "testpatient";
-  const orignial_password = "Password123@";
+  const username = isTestPatient
+    ? "testpatient"
+    : faker.internet.username().toLowerCase();
+  const orignial_password = isTestPatient
+    ? "Password123@"
+    : faker.internet.password().toLowerCase();
   const password = await hashPassword(orignial_password);
   const role = Role.PATIENT;
 
@@ -85,24 +93,25 @@ const createFakePatient = async () => {
     gender: faker.helpers.arrayElement([Gender.MALE, Gender.FEMALE]),
     username,
     password,
-    phoneNumber: faker.phone.number({ style: 'international' }),
+    phoneNumber: faker.phone.number({ style: "international" }),
     address: faker.location.streetAddress(),
-    role
+    role,
   };
 };
-
 
 const createFakeAppointment = (patientId: number, doctorId: number) => {
   // Generate a future date within next 30 days (date only, no time component)
   const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + faker.number.int({ min: 1, max: 30 }));
+  futureDate.setDate(
+    futureDate.getDate() + faker.number.int({ min: 1, max: 30 })
+  );
   // Reset time component to midnight
   futureDate.setHours(0, 0, 0, 0);
-  
+
   const timeSlots = Object.values(TimeSlot);
   const status = Object.values(AppointmentStatus);
   const reason = faker.helpers.arrayElement([
-    "Annual checkup", 
+    "Annual checkup",
     "Follow-up visit",
     "Emergency",
     "Consultation",
@@ -110,7 +119,7 @@ const createFakeAppointment = (patientId: number, doctorId: number) => {
   ]);
   const randomTimeSlot = faker.helpers.arrayElement(timeSlots) as TimeSlot;
   const randomStatus = faker.helpers.arrayElement(status) as AppointmentStatus;
-  
+
   return {
     date: futureDate,
     timeSlot: randomTimeSlot,
@@ -125,7 +134,7 @@ const createFakeAppointment = (patientId: number, doctorId: number) => {
 const createFakeMedicalRecord = (patientId: number, doctorId: number) => {
   const pastDate = new Date();
   pastDate.setDate(pastDate.getDate() - faker.number.int({ min: 1, max: 60 }));
-  
+
   return {
     diagnosis: faker.helpers.arrayElement([
       "Common cold",
@@ -149,37 +158,39 @@ const createFakePrescription = (medicalRecordId: number) => {
     { name: "Metformin", dosage: "500mg twice daily with meals" },
     { name: "Atorvastatin", dosage: "20mg once daily at bedtime" },
   ];
-  
+
   const med = faker.helpers.arrayElement(medications);
-  
+
   return {
     medication: med.name,
     dosage: med.dosage,
-    medicalRecord: { id: medicalRecordId }
+    medicalRecord: { id: medicalRecordId },
   };
 };
 
 const createFakeInsurance = (patientId: number) => {
   const futureDate = new Date();
-  futureDate.setFullYear(futureDate.getFullYear() + faker.number.int({ min: 1, max: 5 }));
-  
+  futureDate.setFullYear(
+    futureDate.getFullYear() + faker.number.int({ min: 1, max: 5 })
+  );
+
   return {
     provider: faker.helpers.arrayElement(insuranceProviders),
     policyNumber: `POL-${faker.string.alphanumeric(8).toUpperCase()}`,
     coverage: faker.number.float({ min: 50, max: 100, fractionDigits: 2 }),
     expiryDate: futureDate,
-    patient: { id: patientId }
+    patient: { id: patientId },
   };
 };
 
 const createFakeBilling = (patientId: number) => {
   const pastDate = new Date();
   pastDate.setDate(pastDate.getDate() - faker.number.int({ min: 1, max: 30 }));
-  
+
   return {
     amount: faker.number.float({ min: 50, max: 5000, fractionDigits: 2 }),
     billingDate: pastDate,
-    patient: { id: patientId }
+    patient: { id: patientId },
   };
 };
 
@@ -208,7 +219,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
     await manager.query('DELETE FROM "medical_records"');
     await manager.query('DELETE FROM "insurances"');
     await manager.query('DELETE FROM "billing"');
-    
+
     // Delete parent tables
     await manager.query('DELETE FROM "doctors"');
     await manager.query('DELETE FROM "patients"');
@@ -228,9 +239,16 @@ export const seedDatabase = async (dataSource: DataSource) => {
 
   // 2. Seed doctors
   console.log("👨‍⚕️ Seeding doctors...");
-  const doctors: Doctor[] = [];
-  // const doctorCount = 10;
-  const doctorCount = 1;
+
+  const testDoctorData = await createFakeDoctor(
+    faker.number.int({ min: 1, max: departments.length }),
+    true
+  );
+  const testDoctor = doctorRepository.create(testDoctorData);
+  await doctorRepository.save(testDoctor);
+  const doctors: Doctor[] = [testDoctor];
+
+  const doctorCount = 100;
   for (let i = 0; i < doctorCount; i++) {
     const departmentId = departments[i % departments.length].id;
     const doctorData = await createFakeDoctor(departmentId);
@@ -242,9 +260,13 @@ export const seedDatabase = async (dataSource: DataSource) => {
 
   // 3. Seed patients
   console.log("🧑 Seeding patients...");
-  const patients: Patient[] = [];
+
+  const testPatientData = await createFakePatient(true);
+  const testPatient = patientRepository.create(testPatientData);
+  await patientRepository.save(testPatient);
+  const patients: Patient[] = [testPatient];
   // const patientCount = 20;
-  const patientCount = 1;
+  const patientCount = 100;
   for (let i = 0; i < patientCount; i++) {
     const patientData = await createFakePatient();
     const patient = patientRepository.create(patientData);
@@ -271,7 +293,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
   // 5. Seed medical records
   console.log("📋 Seeding medical records...");
   const medicalRecords: MedicalRecord[] = [];
-  const recordCount = 25; // Adjust as needed
+  const recordCount = 250; 
 
   for (let i = 0; i < recordCount; i++) {
     const patientId = patients[i % patients.length].id;
@@ -288,9 +310,9 @@ export const seedDatabase = async (dataSource: DataSource) => {
   const prescriptions: Prescription[] = [];
 
   for (const record of medicalRecords) {
-    // 1-3 prescriptions per medical record
-    const prescriptionCount = faker.number.int({ min: 1, max: 3 });
-    
+    // per medical record
+    const prescriptionCount = faker.number.int({ min: 5, max: 8 });
+
     for (let i = 0; i < prescriptionCount; i++) {
       const prescriptionData = createFakePrescription(record.id);
       const prescription = prescriptionRepository.create(prescriptionData);
@@ -319,7 +341,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
   for (const patient of patients) {
     // 3-5 billings per patient
     const billingCount = faker.number.int({ min: 3, max: 5 });
-    
+
     for (let i = 0; i < billingCount; i++) {
       const billingData = createFakeBilling(patient.id);
       const billing = billingRepository.create(billingData);

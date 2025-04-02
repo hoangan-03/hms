@@ -15,7 +15,7 @@ import {ENUM_ROUTES} from '@/routes/routes.enum';
 function MedicalRecordsPage() {
     const [pagination, setPagination] = useState<PaginationRequest>({
         page: 1,
-        perPage: 10,
+        perPage: 8,
     });
 
     const {
@@ -126,7 +126,7 @@ function MedicalRecordsPage() {
         <div className='space-y-7 p-7'>
             <h1>Medical Records Management</h1>
             <div className='rounded-md bg-white'>
-                <ScrollArea className={cn('py-1', records.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
+                <ScrollArea className={cn('py-1', records.length <= 8 ? 'h-fit' : 'h-[70vh]')}>
                     <DataTable
                         data={records}
                         columns={columns}

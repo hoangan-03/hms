@@ -5,6 +5,7 @@ import {toast} from 'react-toastify';
 
 import {DatePicker} from '@/components/common';
 import {
+    Badge,
     Button,
     Card,
     Dialog,
@@ -112,14 +113,41 @@ function ModalUpdateAppointment({open, autoFocus, data, onClose, onSubmitSuccess
             toast.error('Failed to cancel appointment');
         }
     };
+    const getStatusBadge = () => {
+        switch (data?.status) {
+            case 'PENDING':
+                return (
+                    <Badge variant='outline' className='border-amber-200 bg-amber-50 text-amber-700'>
+                        Pending
+                    </Badge>
+                );
+            case 'CONFIRMED':
+                return (
+                    <Badge variant='outline' className='border-green-200 bg-green-50 text-green-700'>
+                        Confirmed
+                    </Badge>
+                );
+            case 'CANCELLED':
+                return (
+                    <Badge variant='outline' className='border-red-200 bg-red-50 text-red-700'>
+                        Cancelled
+                    </Badge>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className='max-w-[800px] min-w-[650px] rounded-xl p-6' autoFocus={autoFocus}>
-                <DialogHeader>
-                    <DialogTitle className='text-2xl'>
-                        {isEditable ? 'Update Appointment' : 'View Appointment'}
-                    </DialogTitle>
+                <DialogHeader className='p-2'>
+                    <div className='flex flex-row justify-between'>
+                        <DialogTitle className='text-2xl'>
+                            {isEditable ? 'Update Appointment' : 'View Appointment'}
+                        </DialogTitle>
+                        {getStatusBadge()}
+                    </div>
                     {!isEditable && (
                         <div className='mt-2 rounded-md border border-amber-200 bg-amber-50 p-3'>
                             <p className='flex items-center text-amber-800'>

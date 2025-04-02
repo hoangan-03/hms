@@ -1,15 +1,18 @@
+import {AlertCircle, CalendarIcon, Check, Clock, FileText, User, X} from 'lucide-react';
 import {toast} from 'react-toastify';
 
 import {
+    Badge,
     Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    Input,
     Label,
-    Textarea,
 } from '@/components/ui';
 import {timeZoneOptions} from '@/constants/dateTime';
 import {formatAppointmentTime, formatDate} from '@/lib/utils';
@@ -53,53 +56,157 @@ function ModalUpdateAppointmentStatus({open, autoFocus, data, onClose, onSucessf
         }
     };
 
+    // Function to get status badge with appropriate color
+    const getStatusBadge = () => {
+        switch (data?.status) {
+            case 'PENDING':
+                return (
+                    <Badge variant='outline' className='border-amber-200 bg-amber-50 text-amber-700'>
+                        Pending
+                    </Badge>
+                );
+            case 'CONFIRMED':
+                return (
+                    <Badge variant='outline' className='border-green-200 bg-green-50 text-green-700'>
+                        Confirmed
+                    </Badge>
+                );
+            case 'CANCELLED':
+                return (
+                    <Badge variant='outline' className='border-red-200 bg-red-50 text-red-700'>
+                        Cancelled
+                    </Badge>
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className='min-w-[600px]' autoFocus={autoFocus}>
-                <DialogHeader>
-                    <DialogTitle>Update Appointment Status</DialogTitle>
-                    <DialogDescription className='font-bold'>
-                        Choose 'Cancel' or 'Confirm' to update status
-                    </DialogDescription>
+            <DialogContent className='min-w-[600px] p-0' autoFocus={autoFocus}>
+                <DialogHeader className='px-6 pt-10'>
+                    <div className='flex items-center justify-between'>
+                        <DialogTitle className='text-2xl'>Appointment Details</DialogTitle>
+                        {getStatusBadge()}
+                    </div>
                 </DialogHeader>
-                <form className='space-y-4'>
-                    <div className='flex items-center justify-between gap-8'>
-                        <div className='flex w-1/2 items-center gap-4 space-y-2'>
-                            <Label>Date</Label>
-                            <Input value={formatDate(new Date(data?.date || today)).day} disabled />
+
+                <div className='px-6 pb-6'>
+                    {/* Patient Info */}
+                    <Card className='mb-2 gap-0 py-3'>
+                        <CardHeader className='mb-0'>
+                            <CardTitle className='text-md flex items-center'>
+                                <User className='mr-2 h-4 w-4' />
+                                Patient Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className='grid grid-cols-2 gap-4'>
+                                <div>
+                                    <Label className='text-sm text-gray-500'>Name</Label>
+                                    <p className='font-medium'>{data?.patient?.name || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <Label className='text-sm text-gray-500'>Phone</Label>
+                                    <p className='font-medium'>{data?.patient?.phone || 'N/A'}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Appointment Details */}
+                    <Card className='mb-2 gap-0 py-3'>
+                        <CardHeader>
+                            <CardTitle className='text-md flex items-center'>
+                                <CalendarIcon className='mr-2 h-4 w-4' />
+                                Appointment Details
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className='grid grid-cols-2 gap-4'>
+                                <div>
+                                    <Label className='flex items-center text-sm text-gray-500'>
+                                        <CalendarIcon className='mr-1 h-3 w-3' /> Date
+                                    </Label>
+                                    <p className='font-medium'>{formatDate(new Date(data?.date || today)).day}</p>
+                                </div>
+                                <div>
+                                    <Label className='flex items-center text-sm text-gray-500'>
+                                        <Clock className='mr-1 h-3 w-3' /> Time
+                                    </Label>
+                                    <p className='font-medium'>{formatAppointmentTime(data?.timeSlot || 'a10_11')}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Medical Details */}
+                    <Card className='gap-0 py-3'>
+                        <CardHeader>
+                            <CardTitle className='text-md flex items-center'>
+                                <FileText className='mr-2 h-4 w-4' />
+                                Medical Details
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className='space-y-4'>
+                            <div>
+                                <Label className='text-sm text-gray-500'>Reason for Visit</Label>
+                                <p className='min-h-[60px] rounded-md border border-gray-100 bg-gray-50 p-2 font-medium whitespace-pre-wrap'>
+                                    {data?.reason || 'No reason provided'}
+                                </p>
+                            </div>
+                            <div>
+                                <Label className='text-sm text-gray-500'>Additional Notes</Label>
+                                <p className='min-h-[60px] rounded-md border border-gray-100 bg-gray-50 p-2 font-medium whitespace-pre-wrap'>
+                                    {data?.notes || 'No notes provided'}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Status Messages */}
+                    {data?.status === 'CANCELLED' && (
+                        <div className='mt-4 rounded-md border border-red-200 bg-red-50 p-3'>
+                            <p className='flex items-center text-red-700'>
+                                <AlertCircle className='mr-2 h-4 w-4' />
+                                This appointment has been cancelled and cannot be updated further.
+                            </p>
                         </div>
-                        <div className='flex w-1/2 items-center gap-4 space-y-2'>
-                            <Label>Time</Label>
-                            <Input value={formatAppointmentTime(data?.timeSlot || 'a10_11')} disabled />
+                    )}
+
+                    {data?.status === 'CONFIRMED' && (
+                        <div className='mt-4 rounded-md border border-green-200 bg-green-50 p-3'>
+                            <p className='flex items-center text-green-700'>
+                                <Check className='mr-2 h-4 w-4' />
+                                This appointment is confirmed. You can still cancel it if needed.
+                            </p>
                         </div>
-                    </div>
-                    <div className='space-y-2'>
-                        <Label>Reason</Label>
-                        <Textarea className='max-h-32 min-h-20' value={data?.reason || ''} disabled />
-                    </div>
-                    <div className='space-y-2'>
-                        <Label>Notes</Label>
-                        <Textarea className='max-h-32 min-h-20' value={data?.notes || ''} disabled />
-                    </div>
-                    <div className='flex justify-center gap-16'>
-                        <Button
-                            variant='error'
-                            className='w-fit'
-                            onClick={handleCancelStatus}
-                            disabled={data?.status !== 'PENDING'}
-                        >
-                            Cancel
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className='mt-6 flex justify-end gap-3'>
+                        <Button variant='cancel' onClick={onClose}>
+                            Close
                         </Button>
-                        <Button
-                            variant='success'
-                            className='w-fit'
-                            onClick={handleConfirmStatus}
-                            disabled={data?.status !== 'PENDING'}
-                        >
-                            Confirm
-                        </Button>
+
+                        {/* Show Cancel button for both PENDING and CONFIRMED status */}
+                        {(data?.status === 'PENDING' || data?.status === 'CONFIRMED') && (
+                            <Button variant='error' onClick={handleCancelStatus}>
+                                <X className='mr-1 h-4 w-4' />
+                                Cancel Appointment
+                            </Button>
+                        )}
+
+                        {/* Show Confirm button only for PENDING status */}
+                        {data?.status === 'PENDING' && (
+                            <Button variant='success' onClick={handleConfirmStatus}>
+                                <Check className='mr-1 h-4 w-4' />
+                                Confirm Appointment
+                            </Button>
+                        )}
                     </div>
-                </form>
+                </div>
             </DialogContent>
         </Dialog>
     );
