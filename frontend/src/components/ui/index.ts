@@ -3,6 +3,7 @@ export {Badge, badgeVariants} from './badge';
 export {Button, buttonVariants} from './button';
 export {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from './card';
 export {Checkbox} from './checkbox';
+export {Collapsible, CollapsibleContent} from './collapsible';
 export {
     Dialog,
     DialogClose,

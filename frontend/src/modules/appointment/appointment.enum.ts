@@ -1,11 +1,4 @@
 export enum APPOINTMENT_TIME_SLOT {
-    A0_1 = 'a0_1',
-    A1_2 = 'a1_2',
-    A2_3 = 'a2_3',
-    A3_4 = 'a3_4',
-    A4_5 = 'a4_5',
-    A5_6 = 'a5_6',
-    A6_7 = 'a6_7',
     A7_8 = 'a7_8',
     A8_9 = 'a8_9',
     A9_10 = 'a9_10',
@@ -20,9 +13,6 @@ export enum APPOINTMENT_TIME_SLOT {
     A18_19 = 'a18_19',
     A19_20 = 'a19_20',
     A20_21 = 'a20_21',
-    A21_22 = 'a21_22',
-    A22_23 = 'a22_23',
-    A23_24 = 'a23_24',
 }
 
 export enum APPOINTMENT_STATUS {

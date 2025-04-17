@@ -1,7 +1,15 @@
-import {ColumnDef} from '@tanstack/react-table';
+import {
+    ColumnDef,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    SortingState,
+    useReactTable,
+} from '@tanstack/react-table';
+import {ArrowDown, ArrowUp, ArrowUpDown} from 'lucide-react';
 import {useReducer, useState} from 'react';
 
-import {DataTable, Icon, Pagination} from '@/components/common';
+import {Icon, Pagination} from '@/components/common';
 import {Badge, Button, ScrollArea, Separator} from '@/components/ui';
 import {useAuthContext} from '@/context/AuthProvider';
 import {cn, formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
@@ -77,79 +85,141 @@ function PatientHomePage() {
         perPage: 10,
     });
 
+    // Add state for sorting
+    const [sorting, setSorting] = useState<SortingState>([]);
+
     const {data, mutate} = useGetAppointments(pagination);
     const appointments = data?.data || [];
     const paginationData = data?.pagination;
 
-    const columns: ColumnDef<IAppointment>[] = [
-        {
-            accessorKey: 'id',
-            size: 80,
-            header: () => <div className='font-bold'>ID</div>,
-            cell: ({row}) => <div>{formatId(row.original.id)}</div>,
+    // Configure table with sorting functionality
+    const table = useReactTable({
+        data: appointments,
+        columns: getColumns(),
+        state: {
+            sorting,
         },
-        {
-            accessorKey: 'date',
-            header: () => <div className='font-bold'>Date</div>,
-            cell: ({row}) => <div>{formatDate(new Date(row.original.date)).day}</div>,
-        },
-        {
-            accessorKey: 'timeSlot',
-            header: () => <div className='font-bold'>Time</div>,
-            cell: ({row}) => <div>{formatAppointmentTime(row.original.timeSlot)}</div>,
-        },
-        {
-            accessorKey: 'doctor',
-            header: () => <div className='font-bold'>Doctor</div>,
-            cell: ({row}) => <div>{row.original.doctor.name}</div>,
-        },
-        {
-            accessorKey: 'reason',
-            header: () => <div className='font-bold'>Reason</div>,
-            cell: ({row}) => (
-                <div className='max-w-40 truncate'>{row.original.reason ? row.original.reason : '<empty>'}</div>
-            ),
-        },
-        {
-            accessorKey: 'status',
-            header: () => <div className='font-bold'>Status</div>,
-            cell: ({row}) => (
-                <div>
-                    <Badge
-                        variant={
-                            row.original.status === 'PENDING'
-                                ? 'warning'
-                                : row.original.status === 'CANCELLED'
-                                  ? 'error'
-                                  : 'success'
-                        }
-                    >
-                        {formatEnumString(row.original.status)}
-                    </Badge>
-                </div>
-            ),
-        },
-        {
-            id: 'actions',
-            header: () => <div className='font-bold'>Actions</div>,
-            cell: ({row}) => (
-                <div className='flex gap-2'>
-                    <Button
-                        size='icon'
-                        variant='none'
-                        onClick={() => dispatch(actions.showUpdateAppointmentStatusModal(row.original))}
-                    >
-                        <Icon
-                            name='pencil'
-                            width={18}
-                            height={18}
-                            className='text-primary-light hover:brightness-110'
-                        />
-                    </Button>
-                </div>
-            ),
-        },
-    ];
+        onSortingChange: setSorting,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+    });
+
+    // Define columns with sorting support
+    function getColumns(): ColumnDef<IAppointment>[] {
+        return [
+            {
+                accessorKey: 'id',
+                size: 80,
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        ID
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => <div>{formatId(row.original.id)}</div>,
+            },
+            {
+                accessorKey: 'date',
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        Date
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => <div>{formatDate(new Date(row.original.date)).day}</div>,
+            },
+            {
+                accessorKey: 'timeSlot',
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        Time
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => <div>{formatAppointmentTime(row.original.timeSlot)}</div>,
+            },
+            {
+                accessorKey: 'doctor.name',
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        Doctor
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => <div>{row.original.doctor.name}</div>,
+            },
+            {
+                accessorKey: 'reason',
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        Reason
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => (
+                    <div className='max-w-40 truncate'>{row.original.reason ? row.original.reason : '<empty>'}</div>
+                ),
+            },
+            {
+                accessorKey: 'status',
+                header: ({column}) => (
+                    <div className='flex cursor-pointer items-center font-bold' onClick={() => column.toggleSorting()}>
+                        Status
+                        <SortIcon column={column} />
+                    </div>
+                ),
+                cell: ({row}) => (
+                    <div>
+                        <Badge
+                            variant={
+                                row.original.status === 'PENDING'
+                                    ? 'warning'
+                                    : row.original.status === 'CANCELLED'
+                                      ? 'error'
+                                      : 'success'
+                            }
+                        >
+                            {formatEnumString(row.original.status)}
+                        </Badge>
+                    </div>
+                ),
+            },
+            {
+                id: 'actions',
+                header: () => <div className='font-bold'>Actions</div>,
+                enableSorting: false,
+                cell: ({row}) => (
+                    <div className='flex gap-2'>
+                        <Button
+                            size='icon'
+                            variant='none'
+                            onClick={() => dispatch(actions.showUpdateAppointmentStatusModal(row.original))}
+                        >
+                            <Icon
+                                name='pencil'
+                                width={18}
+                                height={18}
+                                className='text-primary-light hover:brightness-110'
+                            />
+                        </Button>
+                    </div>
+                ),
+            },
+        ];
+    }
+
+    // Helper component for sort icons
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function SortIcon({column}: {column: any}) {
+        if (!column.getCanSort()) return null;
+
+        if (column.getIsSorted() === 'asc') {
+            return <ArrowUp className='ml-2 h-4 w-4' />;
+        } else if (column.getIsSorted() === 'desc') {
+            return <ArrowDown className='ml-2 h-4 w-4' />;
+        }
+        return <ArrowUpDown className='ml-2 h-4 w-4 opacity-50' />;
+    }
 
     return (
         <div className='space-y-7 p-7'>
@@ -170,7 +240,35 @@ function PatientHomePage() {
             </div>
             <div className='rounded-md bg-white'>
                 <ScrollArea className={cn('py-1', appointments.length <= 8 ? 'h-fit' : 'h-[60vh]')}>
-                    <DataTable data={appointments} columns={columns} />
+                    {/* Replace DataTable with custom table implementation */}
+                    <div className='w-full'>
+                        <table className='w-full'>
+                            <thead>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <tr key={headerGroup.id} className='border-b'>
+                                        {headerGroup.headers.map((header) => (
+                                            <th key={header.id} className='px-4 py-3 text-left text-sm'>
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(header.column.columnDef.header, header.getContext())}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody>
+                                {table.getRowModel().rows.map((row) => (
+                                    <tr key={row.id} className='border-b hover:bg-slate-50'>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <td key={cell.id} className='px-4 py-3 text-sm'>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                     <Separator className='bg-black' />
                     {appointments && paginationData && paginationData.totalItems > 0 && (
                         <Pagination

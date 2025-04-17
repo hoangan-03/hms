@@ -33,6 +33,10 @@ const protectedRoutes = [
         path: ENUM_ROUTES.PROFILE,
         element: <Page.ProfilePage />,
     },
+    {
+        path: ENUM_ROUTES.PATIENT_MEDICAL_RECORDS,
+        element: <Page.PatientMedicalRecordsPage />,
+    },
 ];
 
 const authRoutes = [

@@ -9,6 +9,7 @@ import {
   PaginationParams,
 } from "./interface/paging-response-medical-record.interface";
 import { formatStartDate } from "@/utils/parse-date-string";
+import { UpdateMedicalRecordDto } from "./dtos/update-medical-record.dto";
 
 @Injectable()
 export class MedicalRecordService {
@@ -122,5 +123,78 @@ export class MedicalRecordService {
     }
 
     return record;
+  }
+
+  async updateMedicalRecord(
+    id: number,
+    updateData: UpdateMedicalRecordDto
+  ): Promise<MedicalRecord> {
+    const record = await this.getMedicalRecord(id);
+
+    // Update basic fields if provided
+    if (updateData.diagnosis) {
+      record.diagnosis = updateData.diagnosis;
+    }
+
+    if (updateData.recordDate) {
+      record.recordDate = new Date(updateData.recordDate);
+    }
+
+    // Update doctor if provided
+    if (updateData.doctorId) {
+      record.doctor = { id: updateData.doctorId } as any;
+    }
+
+    // Update patient if provided
+    if (updateData.patientId) {
+      record.patient = { id: updateData.patientId } as any;
+    }
+
+    // Save the updated record first to ensure relationships
+    await this.medicalRecordRepository.save(record);
+
+    // Handle prescriptions updates if provided
+    if (updateData.prescriptions && updateData.prescriptions.length > 0) {
+      // Get current prescriptions (we already have them from getMedicalRecord)
+      const currentPrescriptions = record.prescriptions || [];
+
+      // Process each prescription in the update DTO
+      for (const prescriptionDto of updateData.prescriptions) {
+        if (prescriptionDto.id) {
+          // Update existing prescription
+          const existingIndex = currentPrescriptions.findIndex(
+            (p) => p.id === prescriptionDto.id
+          );
+
+          if (existingIndex >= 0) {
+            // Update existing prescription
+            const prescription = currentPrescriptions[existingIndex];
+            prescription.dosage = prescriptionDto.dosage;
+            await this.medicalRecordRepository.manager.save(prescription);
+          }
+        } else {
+          // Create new prescription
+          const newPrescription = this.medicalRecordRepository.manager.create(
+            "Prescription",
+            {
+              dosage: prescriptionDto.dosage,
+              medicalRecord: { id: record.id },
+            }
+          );
+
+          await this.medicalRecordRepository.manager.save(newPrescription);
+        }
+      }
+    }
+
+    // Return the fully updated record with all relations
+    return this.getMedicalRecord(id);
+  }
+
+  async deleteMedicalRecord(id: number): Promise<void> {
+    const record = await this.getMedicalRecord(id);
+
+    // Delete the record
+    await this.medicalRecordRepository.remove(record);
   }
 }

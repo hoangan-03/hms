@@ -24,6 +24,12 @@ const sidebarContent: SidebarContent[] = [
         role: Object.values(ROLE),
     },
     {
+        label: 'Medical Records',
+        route: ENUM_ROUTES.PATIENT_MEDICAL_RECORDS,
+        icon: <Icon name='document-text' width={20} height={20} />,
+        role: [ROLE.PATIENT],
+    },
+    {
         label: 'Patients',
         route: ENUM_ROUTES.PATIENTS,
         icon: <Icon name='two-people' width={20} height={20} />,
