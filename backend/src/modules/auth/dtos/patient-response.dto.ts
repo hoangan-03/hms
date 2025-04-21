@@ -3,7 +3,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { BaseEntity } from "@/entities/base-class";
 import { Appointment } from "@/entities/appointment.entity";
 import { MedicalRecord } from "@/entities/medical-record.entity";
-import { Billing } from "@/entities/billing.entity";
 import { Insurance } from "@/entities/insurance.entity";
 import { Gender } from "@/modules/patient/enums/gender.enum";
 import { Exclude } from "class-transformer";
@@ -68,9 +67,6 @@ export class PatientResponseDto extends BaseEntity {
 
   @OneToMany(() => MedicalRecord, (record) => record.patient)
   medicalRecords: MedicalRecord[];
-
-  @OneToMany(() => Billing, (billing) => billing.patient)
-  billings: Billing[];
 
   @OneToMany(() => Insurance, (insurance) => insurance.patient)
   insurances: Insurance[];

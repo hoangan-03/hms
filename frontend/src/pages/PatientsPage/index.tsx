@@ -1,4 +1,5 @@
 import {ColumnDef} from '@tanstack/react-table';
+import {UserPlus} from 'lucide-react';
 import {useEffect, useReducer, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
@@ -12,10 +13,12 @@ import {IPatient} from '@/modules/patient/patient.interface';
 import {useGetPatients} from '@/modules/patient/patient.swr';
 import {ENUM_ROUTES} from '@/routes/routes.enum';
 
+import ModalCreatePatient from './ModalCreatePatient';
 import ModalPatientDetails from './ModalPatientDetails';
 
 enum ActionKind {
     MODAL_PATIENT_DETAILS_SHOW = 'MODAL_PATIENT_DETAILS_SHOW',
+    MODAL_CREATE_PATIENT_SHOW = 'MODAL_CREATE_PATIENT_SHOW',
     NONE = 'NONE',
 }
 
@@ -38,6 +41,9 @@ const actions = {
         type: ActionKind.MODAL_PATIENT_DETAILS_SHOW,
         payload: {patient},
     }),
+    showCreatePatientModal: (): Action => ({
+        type: ActionKind.MODAL_CREATE_PATIENT_SHOW,
+    }),
     closeModal: (): Action => ({
         type: ActionKind.NONE,
     }),
@@ -50,6 +56,11 @@ const reducer = (state: State, action: Action<unknown>): State => {
                 ...state,
                 type: ActionKind.MODAL_PATIENT_DETAILS_SHOW,
                 patient: (action.payload as ShowPatientDetailsModalPayload).patient,
+            };
+        case ActionKind.MODAL_CREATE_PATIENT_SHOW:
+            return {
+                ...state,
+                type: ActionKind.MODAL_CREATE_PATIENT_SHOW,
             };
         default:
             return {
@@ -154,7 +165,13 @@ function PatientsPage() {
 
     return (
         <div className='space-y-7 p-7'>
-            <h1>Patients Management</h1>
+            <div className='flex items-center justify-between'>
+                <h1>Patients Management</h1>
+                <Button className='items-center' onClick={() => dispatch(actions.showCreatePatientModal())}>
+                    <UserPlus className='h-4 w-4' />
+                    Register New Patient
+                </Button>
+            </div>
             <div className='rounded-md bg-white'>
                 <ScrollArea className={cn('py-1', patients.length <= 8 ? 'h-fit' : 'h-[70vh]')}>
                     <DataTable data={patients} columns={columns} />
@@ -175,6 +192,14 @@ function PatientsPage() {
                 onClose={() => dispatch(actions.closeModal())}
                 data={state.patient}
                 onSubmitSuccess={() => {
+                    mutate();
+                    setPagination({...pagination, page: 1});
+                }}
+            />
+            <ModalCreatePatient
+                open={state.type === ActionKind.MODAL_CREATE_PATIENT_SHOW}
+                onClose={() => dispatch(actions.closeModal())}
+                onSuccessfulSubmit={() => {
                     mutate();
                     setPagination({...pagination, page: 1});
                 }}

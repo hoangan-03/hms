@@ -3,29 +3,6 @@ import * as yup from 'yup';
 
 import {GENDER} from '../auth/auth.enum';
 
-// const schemaUpdatePatient = yup.object().shape({
-//     name: yup.string().nullable().min(3, 'Name must be at least 3 characters').required('Name is required'),
-//     age: yup
-//         .number()
-//         .nullable()
-//         .positive('Age must be a positive number')
-//         .integer('Age must be an integer')
-//         .min(1, 'Age must be at least 1 year old')
-//         .required('Age is required'),
-//     gender: yup
-//         .string()
-//         .oneOf(Object.values(GENDER), 'Please select a valid gender')
-//         .nullable()
-//         .required('Gender is required'),
-//     phoneNumber: yup
-//         .string()
-//         .nullable()
-//         .matches(/^\d+$/, 'Phone number must contain only numbers')
-//         .min(10, 'Phone number must be at least 10 digits')
-//         .required('Phone number is required'),
-//     address: yup.string().nullable().min(10, 'Address must be at least 10 characters').required('Address is required'),
-// });
-
 const schemaUpdatePatient = yup.object().shape({
     id: yup.number().required('ID is required'),
     name: yup.string().required('Name is required').nullable().min(3, 'Name must be at least 3 characters'),
@@ -47,12 +24,53 @@ const schemaUpdatePatient = yup.object().shape({
 
     phoneNumber: yup
         .string()
-        .required('Phone number is required')
         .nullable()
         .matches(/^\+?\d+$/, 'Phone number must contain only numbers')
         .min(10, 'Phone number must be at least 10 digits'),
 
-    address: yup.string().required('Address is required').nullable().min(10, 'Address must be at least 10 characters'),
+    address: yup.string().nullable(),
 });
 
 export const updatePatientResolver = yupResolver(schemaUpdatePatient);
+
+const schemaCreatePatient = yup.object().shape({
+    name: yup.string().required('Name is required').min(3, 'Name must be at least 3 characters'),
+
+    username: yup
+        .string()
+        .required('Username is required')
+        .min(3, 'Username must be at least 3 characters')
+        .matches(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores'),
+
+    password: yup
+        .string()
+        .required('Password is required')
+        .min(8, 'Password must be at least 8 characters')
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+            'Password must include uppercase, lowercase, number and special character'
+        ),
+
+    age: yup
+        .number()
+        .nullable()
+        .transform((value) => (isNaN(value) ? null : value))
+        .positive('Age must be a positive number')
+        .integer('Age must be an integer')
+        .min(1, 'Age must be at least 1 year old'),
+
+    gender: yup
+        .string()
+        .nullable()
+        .oneOf([...Object.values(GENDER)], 'Please select a valid gender'),
+
+    phoneNumber: yup
+        .string()
+        .nullable()
+        .matches(/^\+?\d+$/, 'Phone number must contain only numbers')
+        .min(10, 'Phone number must be at least 10 digits'),
+
+    address: yup.string().nullable(),
+});
+
+export const createPatientResolver = yupResolver(schemaCreatePatient);

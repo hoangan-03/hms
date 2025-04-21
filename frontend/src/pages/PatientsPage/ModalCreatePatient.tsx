@@ -1,4 +1,4 @@
-import {Calendar, MapPin, Phone, User, Users} from 'lucide-react';
+import {Calendar, Lock, MapPin, Phone, User, UserPlus, Users} from 'lucide-react';
 import {useEffect} from 'react';
 import {Controller, SubmitHandler, useForm} from 'react-hook-form';
 import {toast} from 'react-toastify';
@@ -25,43 +25,44 @@ import {
 } from '@/components/ui';
 import {capitalize} from '@/lib/utils';
 import {GENDER} from '@/modules/auth/auth.enum';
-import {IPatient, IUpdatePatient} from '@/modules/patient/patient.interface';
+import {ICreatePatient} from '@/modules/patient/patient.interface';
 import {PatientService} from '@/modules/patient/patient.service';
-import {updatePatientResolver} from '@/modules/patient/patient.validate';
+import {createPatientResolver} from '@/modules/patient/patient.validate';
 
 interface Props {
     open: boolean;
-    data?: IPatient;
     onClose: () => void;
-    onSubmitSuccess?: () => void;
+    onSuccessfulSubmit?: () => void;
 }
 
 const genders = Object.values(GENDER);
 
 type FormValues = {
-    id: number;
-    name: string | null;
-    age: number | null;
-    gender: GENDER | null;
-    phoneNumber: string | null;
-    address: string | null;
+    name: string;
+    username: string;
+    password: string;
+    age?: number | null;
+    gender?: GENDER | null;
+    phoneNumber?: string | null;
+    address?: string | null;
 };
 
-function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
+function ModalCreatePatient({open, onClose, onSuccessfulSubmit}: Props) {
     const {
         control,
         handleSubmit,
         formState: {errors, isDirty, isSubmitting},
         reset,
     } = useForm<FormValues>({
-        resolver: updatePatientResolver,
-        values: {
-            id: data?.id || 0,
-            name: data?.name || '',
-            age: data?.age || 0,
-            gender: data?.gender || null,
-            phoneNumber: data?.phoneNumber || '',
-            address: data?.address || '',
+        resolver: createPatientResolver,
+        defaultValues: {
+            name: '',
+            username: '',
+            password: '',
+            age: null,
+            gender: null,
+            phoneNumber: '',
+            address: '',
         },
     });
 
@@ -73,23 +74,22 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
-            if (data.id === 0) {
-                throw new Error('Invalid patient ID');
-            }
-            const payload: IUpdatePatient = {
-                name: data.name!,
-                age: data.age!,
-                gender: data.gender !== GENDER.NULL ? data.gender! : undefined,
-                phoneNumber: data.phoneNumber!,
-                address: data.address!,
+            const payload: ICreatePatient = {
+                name: data.name,
+                username: data.username,
+                password: data.password,
+                age: data.age,
+                gender: data.gender !== GENDER.NULL ? data.gender : undefined,
+                phoneNumber: data.phoneNumber,
+                address: data.address,
             };
-            await PatientService.doctorUpdatePatient(data.id, payload);
-            toast.success('Patient details updated successfully!');
-            onSubmitSuccess?.();
+            await PatientService.registerPatient(payload);
+            toast.success('Patient registered successfully!');
+            onSuccessfulSubmit?.();
             onClose();
         } catch (error) {
             console.error(error);
-            toast.error('Failed to update patient details');
+            toast.error('Failed to register patient');
         }
     };
 
@@ -98,14 +98,14 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
             <DialogContent className='max-w-[750px] p-0'>
                 <DialogHeader className='px-6 pt-4'>
                     <DialogTitle className='flex items-center text-2xl'>
-                        <User className='text-primary mr-2 h-5 w-5' />
-                        Patient Information
+                        <UserPlus className='text-primary mr-2 h-5 w-5' />
+                        Register New Patient
                     </DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className='px-6 pb-6'>
                     <Card className='mb-2 gap-2'>
-                        <CardHeader className=''>
+                        <CardHeader>
                             <CardTitle className='text-md flex items-center'>
                                 <Users className='mr-2 h-4 w-4 text-gray-500' />
                                 Personal Details
@@ -125,7 +125,7 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
                                             <Input
                                                 ref={ref}
                                                 onChange={onChange}
-                                                value={value || ''}
+                                                value={value}
                                                 className='py-2'
                                                 placeholder='Enter patient name'
                                                 errorMessage={errors.name?.message}
@@ -194,6 +194,59 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
                     <Card className='mb-2 gap-2'>
                         <CardHeader className='pb-2'>
                             <CardTitle className='text-md flex items-center'>
+                                <User className='mr-2 h-4 w-4 text-gray-500' />
+                                Account Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className='space-y-5'>
+                            <div className='space-y-2'>
+                                <Label className='flex items-center text-gray-700'>
+                                    <User className='mr-1 h-3.5 w-3.5 opacity-70' />
+                                    Username
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name='username'
+                                    render={({field: {value, onChange, ref}}) => (
+                                        <Input
+                                            ref={ref}
+                                            onChange={onChange}
+                                            value={value}
+                                            className='py-2'
+                                            placeholder='Enter username'
+                                            errorMessage={errors.username?.message}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            <div className='space-y-2'>
+                                <Label className='flex items-center text-gray-700'>
+                                    <Lock className='mr-1 h-3.5 w-3.5 opacity-70' />
+                                    Password
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name='password'
+                                    render={({field: {value, onChange, ref}}) => (
+                                        <Input
+                                            ref={ref}
+                                            onChange={onChange}
+                                            value={value}
+                                            className='py-2'
+                                            type='password'
+                                            placeholder='Enter password'
+                                            errorMessage={errors.password?.message}
+                                        />
+                                    )}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className='mb-2 gap-2'>
+                        <CardHeader className='pb-2'>
+                            <CardTitle className='text-md flex items-center'>
                                 <MapPin className='mr-2 h-4 w-4 text-gray-500' />
                                 Contact Information
                             </CardTitle>
@@ -250,7 +303,7 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
                             Cancel
                         </Button>
                         <Button type='submit' disabled={!isDirty || isSubmitting} isLoading={isSubmitting}>
-                            Save Changes
+                            Register Patient
                         </Button>
                     </div>
                 </form>
@@ -259,4 +312,4 @@ function ModalPatientDetails({open, data, onClose, onSubmitSuccess}: Props) {
     );
 }
 
-export default ModalPatientDetails;
+export default ModalCreatePatient;

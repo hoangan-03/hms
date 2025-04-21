@@ -4,7 +4,7 @@ import { Patient } from "@/entities/patient.entity";
 import { MedicalRecord } from "@/entities/medical-record.entity";
 import { Appointment } from "@/entities/appointment.entity";
 import { Insurance } from "@/entities/insurance.entity";
-import { Billing } from "@/entities/billing.entity";
+
 import {
   Injectable,
   NotFoundException,
@@ -18,6 +18,9 @@ import {
   DateRangeFilter,
 } from "../medical-record/interface/paging-response-medical-record.interface";
 import { PaginatedPatientResponseDto } from "./dtos/paginated-patient-response.dto";
+import * as bcrypt from "bcrypt";
+import { CreatePatientDto } from "./dtos/create-patient.dto";
+import { Role } from "@/modules/auth/enums/role.enum";
 
 @Injectable()
 export class PatientService {
@@ -30,8 +33,6 @@ export class PatientService {
     private readonly appointmentRepository: Repository<Appointment>,
     @InjectRepository(Insurance)
     private readonly insuranceRepository: Repository<Insurance>,
-    @InjectRepository(Billing)
-    private readonly billingRepository: Repository<Billing>
   ) {}
 
   // Patient Management
@@ -80,6 +81,31 @@ export class PatientService {
     return patient;
   }
 
+  // Register new patient by doctor
+  async registerPatient(patientData: CreatePatientDto): Promise<Patient> {
+    // Check if username is already taken
+    const existingPatient = await this.patientRepository.findOne({
+      where: { username: patientData.username }
+    });
+    
+    if (existingPatient) {
+      throw new BadRequestException(`Username ${patientData.username} is already taken`);
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(patientData.password, salt);
+    
+    // Create the patient
+    const patient = this.patientRepository.create({
+      ...patientData,
+      password: hashedPassword,
+      role: Role.PATIENT
+    });
+    
+    return this.patientRepository.save(patient);
+  }
+
   // Profile Management
   async updateProfile(id: number, updates: UpdatePatientDto): Promise<Patient> {
     const patient = await this.getOne({ where: { id } });
@@ -104,27 +130,6 @@ export class PatientService {
     return insurance;
   }
 
-  // Billing
-  async getBillingRecords(patientId: number): Promise<Billing[]> {
-    await this.getOne({ where: { id: patientId } }); // Verify patient exists
-    return this.billingRepository.find({
-      where: { patient: { id: patientId } },
-      order: { billingDate: "DESC" },
-    });
-  }
-
-  async getBillingRecord(id: number): Promise<Billing> {
-    const billing = await this.billingRepository.findOne({
-      where: { id },
-      relations: ["patient"],
-    });
-
-    if (!billing) {
-      throw new NotFoundException(`Billing record with ID ${id} not found`);
-    }
-
-    return billing;
-  }
 
   // Prescriptions
   // async getPrescriptions(patientId: number): Promise<Prescription[]> {

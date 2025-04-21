@@ -12,6 +12,16 @@ export interface IPatient extends BaseEntity {
     role: ROLE;
 }
 
+export interface ICreatePatient {
+    name: string;
+    username: string;
+    password: string;
+    age?: number | null;
+    gender?: GENDER | null;
+    phoneNumber?: string | null;
+    address?: string | null;
+}
+
 export interface IPatientInsurance extends BaseEntity {
     id: number;
     provider: string;

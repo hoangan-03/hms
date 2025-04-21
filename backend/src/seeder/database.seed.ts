@@ -7,7 +7,6 @@ import { Appointment } from "@/entities/appointment.entity";
 import { MedicalRecord } from "@/entities/medical-record.entity";
 import { Prescription } from "@/entities/prescription.entity";
 import { Insurance } from "@/entities/insurance.entity";
-import { Billing } from "@/entities/billing.entity";
 import { Gender } from "@/modules/patient/enums/gender.enum";
 import { hashPassword } from "@/utils/hash-password";
 import { Role } from "@/modules/auth/enums/role.enum";
@@ -183,16 +182,7 @@ const createFakeInsurance = (patientId: number) => {
   };
 };
 
-const createFakeBilling = (patientId: number) => {
-  const pastDate = new Date();
-  pastDate.setDate(pastDate.getDate() - faker.number.int({ min: 1, max: 30 }));
 
-  return {
-    amount: faker.number.float({ min: 50, max: 5000, fractionDigits: 2 }),
-    billingDate: pastDate,
-    patient: { id: patientId },
-  };
-};
 
 // Main seeding function
 export const seedDatabase = async (dataSource: DataSource) => {
@@ -206,7 +196,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
   const medicalRecordRepository = dataSource.getRepository(MedicalRecord);
   const prescriptionRepository = dataSource.getRepository(Prescription);
   const insuranceRepository = dataSource.getRepository(Insurance);
-  const billingRepository = dataSource.getRepository(Billing);
+
 
   // Clear all data using raw queries to handle foreign key constraints
   console.log("🧹 Clearing existing data...");
@@ -218,7 +208,6 @@ export const seedDatabase = async (dataSource: DataSource) => {
     await manager.query('DELETE FROM "appointments"');
     await manager.query('DELETE FROM "medical_records"');
     await manager.query('DELETE FROM "insurances"');
-    await manager.query('DELETE FROM "billing"');
 
     // Delete parent tables
     await manager.query('DELETE FROM "doctors"');
@@ -333,23 +322,6 @@ export const seedDatabase = async (dataSource: DataSource) => {
     insurances.push(insurance);
   }
   console.log(`✅ Created ${insurances.length} insurance records`);
-
-  // 8. Seed billing
-  console.log("💵 Seeding billing information...");
-  const billings: Billing[] = [];
-
-  for (const patient of patients) {
-    // 3-5 billings per patient
-    const billingCount = faker.number.int({ min: 3, max: 5 });
-
-    for (let i = 0; i < billingCount; i++) {
-      const billingData = createFakeBilling(patient.id);
-      const billing = billingRepository.create(billingData);
-      await billingRepository.save(billing);
-      billings.push(billing);
-    }
-  }
-  console.log(`✅ Created ${billings.length} billing records`);
 
   console.log("✅ Database seeding completed successfully!");
 };

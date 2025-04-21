@@ -9,6 +9,9 @@ import {
   UseGuards,
   NotFoundException,
   Query,
+  Post,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -21,8 +24,8 @@ import { Patient } from "@/entities/patient.entity";
 import { PatientService } from "./patient.service";
 import { MedicalRecord } from "@/entities/medical-record.entity";
 import { Insurance } from "@/entities/insurance.entity";
-import { Billing } from "@/entities/billing.entity";
 import { UpdatePatientDto } from "./dtos/update-patient.dto";
+import { CreatePatientDto } from "./dtos/create-patient.dto";
 import { JWTAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/user.decorator";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -128,6 +131,36 @@ export class PatientController {
     return this.patientService.updateProfile(patientId, updateData);
   }
 
+  @Post("register")
+  @Roles(Role.DOCTOR)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Register a new patient - Role: Doctor",
+  })
+  @ApiBody({ type: CreatePatientDto })
+  @ApiResponse({
+    status: 201,
+    description: "Patient registered successfully",
+    type: Patient,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request - Invalid input data or username already exists",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing token",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden resource - You are not allowed to access this",
+  })
+  async registerPatient(
+    @Body() createPatientDto: CreatePatientDto
+  ): Promise<Patient> {
+    return this.patientService.registerPatient(createPatientDto);
+  }
+
   @Get("insurance")
   @Roles(Role.PATIENT)
   @ApiOperation({
@@ -150,54 +183,5 @@ export class PatientController {
     return this.patientService.getInsurance(userId);
   }
 
-  @Get("billing")
-  @Roles(Role.PATIENT)
-  @ApiOperation({
-    summary: "Get current patient's billing records - Role: Paient",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Return billing records",
-    type: [Billing],
-  })
-  @ApiResponse({
-    status: 401,
-    description: "Unauthorized - Invalid or missing token",
-  })
-  async getBillingRecords(
-    @CurrentUser("id") userId: number
-  ): Promise<Billing[]> {
-    return this.patientService.getBillingRecords(userId);
-  }
-
-  @Get("billing/:billingId")
-  @Roles(Role.PATIENT)
-  @ApiOperation({
-    summary: "Get specific billing record for current patient - Role: Patient",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Return specific billing record",
-    type: Billing,
-  })
-  @ApiResponse({
-    status: 401,
-    description: "Unauthorized - Invalid or missing token",
-  })
-  @ApiResponse({
-    status: 404,
-    description: "Not Found - Billing record not found",
-  })
-  async getBillingRecord(
-    @CurrentUser("id") userId: number,
-    @Param("billingId") billingId: number
-  ): Promise<Billing> {
-    const billing = await this.patientService.getBillingRecord(billingId);
-    if (billing.patient.id !== userId) {
-      throw new NotFoundException(
-        "Billing record not found or does not belong to the current patient"
-      );
-    }
-    return billing;
-  }
+ 
 }

@@ -1,8 +1,8 @@
 import {axiosInstance} from '@/lib/axios/axios';
 
-import {PaginationResponse} from '../api.interface';
+import {PaginationRequest, PaginationResponse} from '../api.interface';
 import {APIBaseService} from '../main.service';
-import {IPatient, IPatientBilling, IPatientInsurance, IUpdatePatient} from './patient.interface';
+import {ICreatePatient,IPatient, IPatientBilling, IPatientInsurance, IUpdatePatient} from './patient.interface';
 
 export class PatientService extends APIBaseService {
     public static readonly ROUTES = {
@@ -13,6 +13,7 @@ export class PatientService extends APIBaseService {
         BILLING_BY_ID: (id: number) => APIBaseService.BASE_URL + `/patients/billing/${id}`,
         UPDATE_PATIENT: APIBaseService.BASE_URL + '/patients/profile', // might put this in auth service
         DOCTOR_UPDATE_PATIENT: (id: number) => APIBaseService.BASE_URL + `/patients/profile/doctor-update/${id}`,
+        REGISTER_PATIENT: APIBaseService.BASE_URL + '/patients/register',
     };
 
     public static async getPatients(pagination?: PaginationRequest) {
@@ -47,5 +48,9 @@ export class PatientService extends APIBaseService {
 
     public static async doctorUpdatePatient(id: number, payload: IUpdatePatient) {
         return await axiosInstance.patch<IPatient>(PatientService.ROUTES.DOCTOR_UPDATE_PATIENT(id), payload);
+    }
+
+    public static async registerPatient(patientData: ICreatePatient) {
+        return await axiosInstance.post<IPatient>(PatientService.ROUTES.REGISTER_PATIENT, patientData);
     }
 }

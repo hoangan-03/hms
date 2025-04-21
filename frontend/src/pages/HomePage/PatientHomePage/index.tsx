@@ -224,7 +224,7 @@ function PatientHomePage() {
     return (
         <div className='space-y-7 p-7'>
             <div className='space-y-1'>
-                <h1>Appointments Management</h1>
+                <h1>My Appointments</h1>
                 <p>
                     Welcome, <span className='font-bold'>{user?.name}</span>
                 </p>
