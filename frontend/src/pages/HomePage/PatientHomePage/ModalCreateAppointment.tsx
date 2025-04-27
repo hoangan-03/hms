@@ -122,12 +122,13 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
                                     control={control}
                                     name='date'
                                     render={({field: {onChange, value}}) => (
-                                        <DatePicker
-                                            currentDate={value}
-                                            setCurrentDate={onChange}
-                                            minDate={today}
-                                            className='w-full'
-                                        />
+                                        <div className='w-full'>
+                                            <DatePicker
+                                                currentDate={value}
+                                                setCurrentDate={onChange}
+                                                minDate={today}
+                                            />
+                                        </div>
                                     )}
                                 />
                             </div>
@@ -264,7 +265,7 @@ function ModalCreateAppointment({open, onClose, autoFocus, onSuccessfulSubmit}: 
                     {/* Action Buttons */}
                     <Separator className='my-6' />
                     <div className='flex justify-end gap-3'>
-                        <Button variant='outline' onClick={onClose} className='px-6'>
+                        <Button variant='cancel' onClick={onClose} className='px-6'>
                             Cancel
                         </Button>
                         <Button

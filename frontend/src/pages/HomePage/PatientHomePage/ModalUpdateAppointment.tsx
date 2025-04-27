@@ -117,19 +117,19 @@ function ModalUpdateAppointment({open, autoFocus, data, onClose, onSubmitSuccess
         switch (data?.status) {
             case 'PENDING':
                 return (
-                    <Badge variant='outline' className='border-amber-200 bg-amber-50 text-amber-700'>
+                    <Badge className='border-amber-200 bg-amber-50 text-amber-700'>
                         Pending
                     </Badge>
                 );
             case 'CONFIRMED':
                 return (
-                    <Badge variant='outline' className='border-green-200 bg-green-50 text-green-700'>
+                    <Badge className='border-green-200 bg-green-50 text-green-700'>
                         Confirmed
                     </Badge>
                 );
             case 'CANCELLED':
                 return (
-                    <Badge variant='outline' className='border-red-200 bg-red-50 text-red-700'>
+                    <Badge className='border-red-200 bg-red-50 text-red-700'>
                         Cancelled
                     </Badge>
                 );
