@@ -25,6 +25,27 @@ function useGetAppointments(pagination?: PaginationRequest, shouldFetch = true) 
     };
 }
 
+function useGetAppointmentsDoctors(pagination?: PaginationRequest, shouldFetch = true) {
+    const url = AppointmentService.ROUTES.APPOINTMENT_DOCTORS;
+
+    const {data, mutate, error, isLoading, isValidating} = useSWR(
+        shouldFetch ? {...pagination, key: url} : null,
+        AppointmentService.getAppointmentsDoctors,
+        {
+            revalidateOnFocus: true,
+            keepPreviousData: false,
+        }
+    );
+
+    return {
+        data: data,
+        mutate,
+        error,
+        isLoading,
+        isValidating,
+    };
+}
+
 function useGetAvailableDoctors(payload: IAvailableDoctorRequest, shouldFetch = true) {
     const url = AppointmentService.ROUTES.AVAILABLE_DOCTORS;
 
@@ -48,4 +69,4 @@ function useGetAvailableDoctors(payload: IAvailableDoctorRequest, shouldFetch = 
     };
 }
 
-export {useGetAppointments, useGetAvailableDoctors};
+export {useGetAppointments, useGetAppointmentsDoctors, useGetAvailableDoctors};

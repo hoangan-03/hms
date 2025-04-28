@@ -7,8 +7,9 @@ import {useAuthContext} from '@/context/AuthProvider';
 import {cn, formatAppointmentTime, formatDate, formatEnumString, formatId} from '@/lib/utils';
 import {PaginationRequest} from '@/modules/api.interface';
 import {IAppointment} from '@/modules/appointment/appointment.interface';
-import {useGetAppointments} from '@/modules/appointment/appointment.swr';
+import {useGetAppointmentsDoctors} from '@/modules/appointment/appointment.swr';
 
+// import {useGetAppointments} from '@/modules/appointment/appointment.swr';
 import ModalUpdateAppointmentStatus from './ModalUpdateAppointmentStatus';
 
 enum ActionKind {
@@ -68,7 +69,7 @@ function DoctorHomePage() {
         perPage: 10,
     });
 
-    const {data, mutate} = useGetAppointments(pagination);
+    const {data, mutate} = useGetAppointmentsDoctors(pagination);
     const appointments = data?.data || [];
     const paginationData = data?.pagination;
 
