@@ -62,7 +62,7 @@ export class AppointmentController {
     description: "Unauthorized - Invalid or missing token",
   })
   async getAppointments(
-    @CurrentUser("id") patientId: number,
+    @CurrentUser("id") id: number,
     @Query() queryParams: PagingQueryDto
   ): Promise<PaginatedAppointmentResponse> {
     const dateFrom = queryParams.dateFrom
@@ -72,8 +72,8 @@ export class AppointmentController {
       ? parseDateString(queryParams.dateTo)
       : undefined;
 
-    return this.appointmentService.getAppointments(
-      patientId,
+    return this.appointmentService.getAppointmentOfDoctor(
+      id,
       {
         page: queryParams.page,
         perPage: queryParams.perPage,
